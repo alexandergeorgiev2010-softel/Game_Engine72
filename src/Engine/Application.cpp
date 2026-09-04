@@ -16,6 +16,8 @@ Application::Application(ApplicationConfig config)
 void Application::run()
 {
     std::cout << "Starting " << m_config.name << '\n';
+     
+
 
     auto lastFrameTime = std::chrono::steady_clock::now();
 
