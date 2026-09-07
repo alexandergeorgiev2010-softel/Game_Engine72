@@ -1,6 +1,7 @@
 #include "Engine/Window/Window.h"
-#include <GLFW/glfw3.h>
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
+
 
 namespace Engine {
     Window::Window(int width, int height, const char* title) {

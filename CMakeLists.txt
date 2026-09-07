@@ -11,6 +11,7 @@ add_executable(Game_Engine72
     src/Engine/Application.cpp
     src/Engine/main.cpp
     src/Engine/Window/Window.cpp
+    src/Engine/Physics/PhysicsWorld.cpp
     third_party/glad/src/gl.c
 )
 

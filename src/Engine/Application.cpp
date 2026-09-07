@@ -5,11 +5,14 @@
 #include <thread>
 #include <utility>
 
+
 namespace Engine {
 
 Application::Application(ApplicationConfig config)
     : m_config(std::move(config)),
-      m_window(1280, 720, "Game Engine 72")
+      m_window(1600, 900, "Game Engine 72"),
+      m_RigidBody({0, 2, 0}, {0, 0, 0}, 1.0f, false),
+      m_PhysicsWorld()
 {
 }
 
@@ -28,8 +31,8 @@ void Application::run()
         const std::chrono::duration<float> frameDuration = currentFrameTime - lastFrameTime;
         const float deltaTime = frameDuration.count();
         lastFrameTime = currentFrameTime;
-        
-        update(deltaTime);
+
+        update(deltaTime, m_RigidBody);
         render();
 
         ++m_frame;
@@ -43,30 +46,9 @@ void Application::run()
     std::cout << "Application stopped.\n";
 }
 
-void Application::update(float deltaTime)
+void Application::update(float deltaTime, RigidBody& m_RigidBody)
 {
-    if (!is_resting) {
-        m_velocity += m_gravity * deltaTime;
-        m_position += m_velocity * deltaTime;
-    }
-
-
-    if (m_position.y < m_groundHeight) {
-        m_position.y = m_groundHeight;
-        
-        if (std::abs(m_velocity.y) < restThreshold) {
-            m_velocity.y = 0.0f;
-            is_resting = true;
-        }else {
-            m_velocity.y = -m_velocity.y * m_restitution;
-        }
-    }
-    m_speed = m_velocity.length();
-    
-    std::cout << "Speed : " << m_speed << "\n";
-    std::cout << "Update frame " << m_frame << " deltaTime=" << deltaTime << "s\n";
-    std::cout << "Position: (" << m_position.x << ", " << m_position.y << ", " << m_position.z << ")\n";
-    std::cout << "Velocity: (" << m_velocity.x << ", " << m_velocity.y << ", " << m_velocity.z << ")\n";
+   m_PhysicsWorld.update(deltaTime, m_RigidBody);
 }
 
 void Application::render()
