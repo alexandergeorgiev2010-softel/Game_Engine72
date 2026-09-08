@@ -1,6 +1,7 @@
 #include "Engine/Window/Window.h"
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
+#include <iostream>
 
 
 namespace Engine {
@@ -22,6 +23,13 @@ namespace Engine {
         }
 
         glfwMakeContextCurrent(static_cast<GLFWwindow*>(m_window));
+
+        if (!gladLoadGL(GLADloadfunc(glfwGetProcAddress))) {
+            std::cout << "Failed to initialize GLAD" << "\n";
+            return;
+        }
+
+        std::cout << "OpenGL version: " << glGetString(GL_VERSION) << "\n";
     }
 
     Window::~Window() {
