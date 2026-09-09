@@ -48,5 +48,9 @@ namespace Engine {
         glfwPollEvents();
     }
 
+    void Window::SwapBuffers() {
+        glfwSwapBuffers(static_cast<GLFWwindow*>(m_window));
+    }
+
     
 }
