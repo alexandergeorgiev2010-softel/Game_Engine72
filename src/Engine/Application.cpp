@@ -39,7 +39,7 @@ void Application::run()
         render();
 
         ++m_frame;
-        if (m_frame >= m_config.maxFrames || m_window.ShouldClose()) {
+        if (/*m_frame >= m_config.maxFrames ||*/ m_window.ShouldClose()) {
             m_running = false;
         }
 
@@ -62,9 +62,9 @@ void Application::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     float vertices[] = {
-        0.0f, 0.0f, 0.0f,
-        1.0f, 0.0f, 0.0f,
-        0.5f, 1.0f, 0.0f
+        -0.5f, -0.5f, 0.0f,
+        0.5f, -0.5f, 0.0f,
+        0.0f, 0.5f, 0.0f
     };
 
     GLuint VAO;
@@ -89,6 +89,66 @@ void Application::render()
         }
         
         )";
+
+    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+    glCompileShader(vertexShader);
+
+    GLint success;
+    glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+
+    if (!success) {
+        char infoLog[512];
+        glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+        std::cerr << "Vertex shader compilation failed:\n" << infoLog << '\n';
+    }else {
+        std::cout << "Vertex shader compiled successfully.\n";
+    }
+
+
+    GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+    const char* fragmentShaderSource = R"(
+        #version 410 core
+
+        out vec4 FragColor;
+
+        void main() {
+            FragColor = vec4(0.0, 1.0, 0.0, 0.7);
+        }
+
+        )";
+
+    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+    glCompileShader(fragmentShader);
+
+    glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
+
+    if (!success) {
+        char infoLog[512];
+        glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
+        std::cerr << "Fragment shader compilation failed\n" << infoLog << '\n'; 
+    }else {
+        std::cout << "Fragment shader compiled successfully\n";
+    }
+
+    GLuint shaderProgram = glCreateProgram();
+
+    glAttachShader(shaderProgram, vertexShader);
+    glAttachShader(shaderProgram, fragmentShader);
+    glLinkProgram(shaderProgram);
+    
+    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+
+    if (!success) {
+        char infoLog[512];
+        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
+        std::cerr << "Shader program linking failed\n" << infoLog << '\n';
+    }else {
+        std::cout << "Shader program linked successfully\n";
+    }
+
+    glUseProgram(shaderProgram);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
 
 
 
