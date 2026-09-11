@@ -22,6 +22,8 @@ public:
 private:
     void update(float deltaTime, RigidBody& m_RigidBody);
     void render();
+    void renderTriangle();
+    void renderCube();
     Window m_window;
 
 private:
