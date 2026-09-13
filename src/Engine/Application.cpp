@@ -8,6 +8,10 @@
 #include <thread>
 #include <utility>
 
+#include <fstream>
+#include <sstream>
+
+
 
 namespace Engine {
 
@@ -26,9 +30,8 @@ void Application::run()
     std::cout << "Starting " << m_config.name << '\n';
      
 
-
+    InitializeRenderer();
     auto lastFrameTime = std::chrono::steady_clock::now();
-
     while (m_running) {
         m_window.PollEvents();
 
@@ -59,6 +62,7 @@ void Application::update(float deltaTime, RigidBody& m_RigidBody)
 
 void Application::render()
 {
+
     std::cout << "Render frame " << m_frame << '\n';
 
     glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
@@ -71,19 +75,39 @@ void Application::render()
 
 void Application::renderTriangle()
 {    
+    glUseProgram(m_triangleShaderProgram);
+    glBindVertexArray(m_triangleVAO);
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+}
+
+void Application::renderCube()
+{
+    glUseProgram(m_cubeShaderProgram);
+    glBindVertexArray(m_cubeVAO);
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, nullptr);
+}
+
+void Application::InitializeRenderer() 
+{
+    InitializeTriangle();
+    InitializeCube();
+}
+
+void Application::InitializeTriangle()
+{
     float vertices[] = {
         -0.5f, -0.5f, 0.0f,
         0.5f, -0.5f, 0.0f,
         0.0f, 0.5f, 0.0f
     };
 
-    GLuint VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+ 
+    glGenVertexArrays(1, &m_triangleVAO);
+    glBindVertexArray(m_triangleVAO);
     
-    GLuint VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+   
+    glGenBuffers(1, &m_triangleVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_triangleVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -140,28 +164,25 @@ void Application::renderTriangle()
         std::cout << "Fragment shader compiled successfully\n";
     }
 
-    GLuint shaderProgram = glCreateProgram();
+    m_triangleShaderProgram = glCreateProgram();
 
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+    glAttachShader(m_triangleShaderProgram, vertexShader);
+    glAttachShader(m_triangleShaderProgram, fragmentShader);
+    glLinkProgram(m_triangleShaderProgram);
     
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    glGetProgramiv(m_triangleShaderProgram, GL_LINK_STATUS, &success);
 
     if (!success) {
         char infoLog[512];
-        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
+        glGetProgramInfoLog(m_triangleShaderProgram, 512, nullptr, infoLog);
         std::cerr << "Shader program linking failed\n" << infoLog << '\n';
     }else {
         std::cout << "Shader program linked successfully\n";
     }
 
-    glUseProgram(shaderProgram);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-    
 }
 
-void Application::renderCube()
+void Application::InitializeCube()
 {
     float vertices[] = {
         //Front face
@@ -192,13 +213,13 @@ void Application::renderCube()
 
     };
 
-    GLuint VAO;
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
+    
+    glGenVertexArrays(1, &m_cubeVAO);
+    glBindVertexArray(m_cubeVAO);
 
-    GLuint VBO;
-    glGenBuffers(1, &VBO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    
+    glGenBuffers(1, &m_cubeVBO);
+    glBindBuffer(GL_ARRAY_BUFFER, m_cubeVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
@@ -231,23 +252,27 @@ void Application::renderCube()
         3, 6, 7 
     };
 
-    GLuint EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  
+    glGenBuffers(1, &m_cubeEBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_cubeEBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    const char* vertexShaderSource = R"(
-        #version 410 core
-        layout (location = 0) in vec3 aPos;
 
-        void main() {
-            gl_Position = vec4(aPos, 1.0);
-        }
-        
-        )";
+    std::ifstream vertexFile("src/Engine/Renderer/cube.vert");
 
-    glShaderSource(vertexShader, 1, &vertexShaderSource, nullptr);
+    if (!vertexFile.is_open()) {
+        std::cerr << "Failed to open cube.vert shader\n";
+        return;
+    }
+
+    std::stringstream vertexStream;
+    vertexStream << vertexFile.rdbuf();
+
+    std::string vertexShaderSource = vertexStream.str();
+    const char* vertexSource = vertexShaderSource.c_str();
+
+    glShaderSource(vertexShader, 1, &vertexSource, nullptr);
     glCompileShader(vertexShader);
 
     GLint success;
@@ -263,18 +288,20 @@ void Application::renderCube()
 
 
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* fragmentShaderSource = R"(
-        #version 410 core
+    std::ifstream fragmentFile("src/Engine/Renderer/cube.frag");
+    
+    if (!fragmentFile.is_open()) {
+        std::cerr << "Failed to open cube.frag shader";
+        return;
+    }
 
-        out vec4 FragColor;
+    std::stringstream fragmentStream;
+    fragmentStream << fragmentFile.rdbuf();
 
-        void main() {
-            FragColor = vec4(0.0, 1.0, 0.0, 0.7);
-        }
+    std::string fragmentShaderSource = fragmentStream.str();
+    const char* fragmentSource = fragmentShaderSource.c_str();
 
-        )";
-
-    glShaderSource(fragmentShader, 1, &fragmentShaderSource, nullptr);
+    glShaderSource(fragmentShader, 1, &fragmentSource, nullptr);
     glCompileShader(fragmentShader);
 
     glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
@@ -287,25 +314,22 @@ void Application::renderCube()
         std::cout << "Fragment shader compiled successfully\n";
     }
 
-    GLuint shaderProgram = glCreateProgram();
+    m_cubeShaderProgram = glCreateProgram();
 
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
+    glAttachShader(m_cubeShaderProgram, vertexShader);
+    glAttachShader(m_cubeShaderProgram, fragmentShader);
+    glLinkProgram(m_cubeShaderProgram);
     
-    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
+    glGetProgramiv(m_cubeShaderProgram, GL_LINK_STATUS, &success);
 
     if (!success) {
         char infoLog[512];
-        glGetProgramInfoLog(shaderProgram, 512, nullptr, infoLog);
+        glGetProgramInfoLog(m_cubeShaderProgram, 512, nullptr, infoLog);
         std::cerr << "Shader program linking failed\n" << infoLog << '\n';
     }else {
         std::cout << "Shader program linked successfully\n";
     }
 
-    glUseProgram(shaderProgram);
-
-    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 
 
 }
