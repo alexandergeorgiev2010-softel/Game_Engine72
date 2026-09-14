@@ -4,7 +4,6 @@ layout (location = 0) in vec3 aPos;
 
 void main() {
     float angle = 0.7;
-
     float c = cos(angle);
     float s = sin(angle);
 
@@ -22,4 +21,6 @@ void main() {
         rotated.z / z,
         1.0
     );
+
+
 }

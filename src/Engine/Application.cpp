@@ -10,7 +10,7 @@
 
 #include <fstream>
 #include <sstream>
-
+#include <filesystem>
 
 
 namespace Engine {
@@ -58,7 +58,6 @@ void Application::update(float deltaTime, RigidBody& m_RigidBody)
 {
    m_PhysicsWorld.update(deltaTime, m_RigidBody);
 }
-
 
 void Application::render()
 {
@@ -259,7 +258,7 @@ void Application::InitializeCube()
 
     GLuint vertexShader = glCreateShader(GL_VERTEX_SHADER);
 
-    std::ifstream vertexFile("src/Engine/Renderer/cube.vert");
+    std::ifstream vertexFile("src/Engine/Renderer/shaders/cube.vert");
 
     if (!vertexFile.is_open()) {
         std::cerr << "Failed to open cube.vert shader\n";
@@ -288,7 +287,7 @@ void Application::InitializeCube()
 
 
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    std::ifstream fragmentFile("src/Engine/Renderer/cube.frag");
+    std::ifstream fragmentFile("src/Engine/Renderer/shaders/cube.frag");
     
     if (!fragmentFile.is_open()) {
         std::cerr << "Failed to open cube.frag shader";
@@ -329,6 +328,7 @@ void Application::InitializeCube()
     }else {
         std::cout << "Shader program linked successfully\n";
     }
+
 
 
 

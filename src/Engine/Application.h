@@ -29,6 +29,7 @@ private:
     void InitializeCube();
     void InitializeTriangle();
 
+
     GLuint m_triangleVAO = 0;
     GLuint m_triangleVBO = 0;
     GLuint m_triangleShaderProgram = 0;
