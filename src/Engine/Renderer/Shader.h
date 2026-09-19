@@ -11,3 +11,7 @@ class Shader {
     private:
         unsigned int m_program = 0;
 };
+
+void Shader::bind() const {
+    glUseProgram(m_program);
+}

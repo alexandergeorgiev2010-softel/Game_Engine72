@@ -4,6 +4,7 @@
 #include "Engine/Window/Window.h"
 #include "Engine/Physics/Rigidbody.h"
 #include "Engine/Physics/PhysicsWorld.h"
+#include "Engine/Renderer/Mesh.h"
 #include <glad/gl.h>
 
 
@@ -34,9 +35,6 @@ private:
     GLuint m_triangleVBO = 0;
     GLuint m_triangleShaderProgram = 0;
 
-    GLuint m_cubeVAO = 0;
-    GLuint m_cubeVBO = 0;
-    GLuint m_cubeEBO = 0;
     GLuint m_cubeShaderProgram = 0;
     Window m_window;
 
