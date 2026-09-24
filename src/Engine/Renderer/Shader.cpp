@@ -1,9 +1,11 @@
-#include "src/Engine/Renderer/Shader.h"
+#include "Engine/Renderer/Shader.h"
 #include "glad/gl.h"
 
 #include <fstream>
 #include <sstream>
 #include <iostream>
+
+namespace Engine {
 
 Shader::Shader(const char* vertexPath, const char* fragmentPath) {
     std::ifstream vertexFile(vertexPath);
@@ -81,5 +83,6 @@ void Shader::bind() const {
     glUseProgram(m_program);
 }
 
+}
 
 

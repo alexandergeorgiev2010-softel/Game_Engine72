@@ -12,6 +12,9 @@ add_executable(Game_Engine72
     src/Engine/main.cpp
     src/Engine/Window/Window.cpp
     src/Engine/Physics/PhysicsWorld.cpp
+    src/Engine/Renderer/Mesh.cpp
+    src/Engine/Renderer/Primitives.cpp
+    src/Engine/Renderer/Shader.cpp
     third_party/glad/src/gl.c
 )
 

@@ -5,6 +5,9 @@
 #include "Engine/Physics/Rigidbody.h"
 #include "Engine/Physics/PhysicsWorld.h"
 #include "Engine/Renderer/Mesh.h"
+#include "Engine/Renderer/Shader.h"
+#include "Engine/Renderer/Primitives.h"
+#include "Engine/Math/Mat4.h"
 #include <glad/gl.h>
 
 
@@ -24,21 +27,13 @@ public:
 private:
     void update(float deltaTime, RigidBody& m_RigidBody);
     void render();
-    void renderTriangle();
-    void renderCube();
-    void InitializeRenderer();
-    void InitializeCube();
-    void InitializeTriangle();
+    
 
-
-    GLuint m_triangleVAO = 0;
-    GLuint m_triangleVBO = 0;
-    GLuint m_triangleShaderProgram = 0;
-
-    GLuint m_cubeShaderProgram = 0;
     Window m_window;
 
-private:
+    Mesh m_cube;
+    Shader m_shader;
+
     ApplicationConfig m_config;
     RigidBody m_RigidBody;
     PhysicsWorld m_PhysicsWorld;

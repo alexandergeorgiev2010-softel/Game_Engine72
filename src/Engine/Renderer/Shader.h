@@ -2,6 +2,8 @@
 
 #include <glad/gl.h>
 
+namespace Engine {
+
 class Shader {
     public:
         Shader(const char* vertexPath, const char* fragmentPath);
@@ -12,6 +14,4 @@ class Shader {
         unsigned int m_program = 0;
 };
 
-void Shader::bind() const {
-    glUseProgram(m_program);
 }

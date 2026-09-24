@@ -4,9 +4,11 @@
 namespace Engine {
 
 struct Vec3 {
-    float x = 0.0f;
-    float y = 0.0f;
-    float z = 0.0f;
+    float x;
+    float y;
+    float z;
+
+    Vec3(float inputX, float inputY, float inputZ): x(inputX), y(inputY), z(inputZ) {}
 
     Vec3 operator+(const Vec3& other) const
     {

@@ -1,6 +1,8 @@
 #pragma once
-
 #include <glad/gl.h>
+
+
+namespace Engine {
 
 class Mesh {
     public:
@@ -9,7 +11,7 @@ class Mesh {
         Mesh(
             const float* vertices,
             unsigned int vertexCount,
-            unsigned int* indices,
+            const unsigned int* indices,
             unsigned int indicesCount
         );
             
@@ -21,3 +23,6 @@ class Mesh {
         unsigned int m_EBO = 0;
         unsigned int m_indexCount = 0;
 };
+
+
+}
