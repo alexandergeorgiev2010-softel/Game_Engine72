@@ -15,6 +15,7 @@ Application::Application(ApplicationConfig config)
       m_window(1600, 900, "Game Engine 72"),
       m_cube(Primitives::createCube()),
       m_shader("src/Engine/Renderer/shaders/cube.vert", "src/Engine/Renderer/shaders/cube.frag"),
+      m_camera({0.0f, 0.0f, 5.0f}), 
       m_RigidBody({0, 2, 0}, {0, 0, 0}, 1.0f, false),
       m_PhysicsWorld()
 {
@@ -26,18 +27,8 @@ void Application::run()
 
     std::cout << "Starting " << m_config.name << '\n';
 
-    Mat4 rotation = Mat4::RotationY(1.5707963f);
+    
 
-Vec4 position(1.0f, 0.0f, 0.0f, 1.0f);
-
-Vec4 result = rotation * position;
-
-std::cout << "Result: ("
-          << result.x << ", "
-          << result.y << ", "
-          << result.z << ", "
-          << result.w << ")\n";
-     
 
     auto lastFrameTime = std::chrono::steady_clock::now();
     while (m_running) {
@@ -65,6 +56,8 @@ std::cout << "Result: ("
 void Application::update(float deltaTime, RigidBody& m_RigidBody)
 {
    m_PhysicsWorld.update(deltaTime, m_RigidBody);
+
+   m_cubeRotation += 1.0f * deltaTime;
 }
 
 void Application::render()
@@ -76,6 +69,16 @@ void Application::render()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_shader.bind();
+
+    Mat4 model = Mat4::RotationZ(m_cubeRotation);
+    m_shader.setMat4("model", model);
+
+    Mat4 view = m_camera.getViewMatrix();
+    m_shader.setMat4("view", view);
+
+    Mat4 projection = Mat4::Perspective(70.0f * 3.14159265 / 180.0f, 1600.0f / 900.0f, 0.1f, 100.0f);
+    m_shader.setMat4("projection", projection);
+
     m_cube.draw();
     m_window.SwapBuffers();
 }

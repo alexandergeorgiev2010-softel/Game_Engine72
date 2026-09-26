@@ -8,6 +8,7 @@
 #include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/Primitives.h"
 #include "Engine/Math/Mat4.h"
+#include "Engine/Renderer/Camera.h"
 #include <glad/gl.h>
 
 
@@ -30,9 +31,9 @@ private:
     
 
     Window m_window;
-
     Mesh m_cube;
     Shader m_shader;
+    Camera m_camera;
 
     ApplicationConfig m_config;
     RigidBody m_RigidBody;
@@ -40,6 +41,7 @@ private:
     
     bool m_running = true;
     int m_frame = 0;
+    float m_cubeRotation = 0.0f;
 };
 
 }

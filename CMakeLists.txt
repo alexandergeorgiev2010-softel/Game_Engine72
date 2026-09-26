@@ -15,6 +15,7 @@ add_executable(Game_Engine72
     src/Engine/Renderer/Mesh.cpp
     src/Engine/Renderer/Primitives.cpp
     src/Engine/Renderer/Shader.cpp
+    src/Engine/Renderer/Camera.cpp
     third_party/glad/src/gl.c
 )
 

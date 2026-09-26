@@ -106,5 +106,21 @@ namespace Engine {
             return result;
         }
 
+        static Mat4 Perspective(float fov, float aspect, float nearPlane, float farPlane) {
+            Mat4 result;
+            
+            float f = 1.0 / std::tan(fov / 2);
+
+            result.m[0][0] = f / aspect;
+            result.m[1][1] = f;
+            
+            result.m[2][2] = (farPlane + nearPlane) / (nearPlane - farPlane);
+            result.m[2][3] = (2.0f * farPlane * nearPlane) / (nearPlane - farPlane);
+
+            result.m[3][2] = -1.0f;
+            result.m[3][3] = 0.0f;
+
+            return result;
+        }
     };
 }
