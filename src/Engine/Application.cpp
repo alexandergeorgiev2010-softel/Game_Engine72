@@ -1,5 +1,6 @@
 #include "Engine/Application.h"
 #include <glad/gl.h>
+#include <GLFW/glfw3.h>
 
 #include <chrono>
 #include <iostream>
@@ -24,6 +25,8 @@ Application::Application(ApplicationConfig config)
 void Application::run()
 {
     glEnable(GL_DEPTH_TEST);
+
+    m_window.CaptureMouse();
 
     std::cout << "Starting " << m_config.name << '\n';
 
@@ -55,9 +58,42 @@ void Application::run()
 
 void Application::update(float deltaTime, RigidBody& m_RigidBody)
 {
+   float speed = 5.0f;
+
+   if (m_window.IsKeyPressed(GLFW_KEY_W)) {
+        m_camera.MoveForward(speed * deltaTime);
+   }
+
+   if (m_window.IsKeyPressed(GLFW_KEY_S)) {
+        m_camera.MoveBackward(speed * deltaTime);
+   }
+
+   if (m_window.IsKeyPressed(GLFW_KEY_D)) {
+        m_camera.MoveRight(speed * deltaTime);
+   }
+
+   if (m_window.IsKeyPressed(GLFW_KEY_A)) {
+        m_camera.MoveLeft(speed * deltaTime);
+   }
+
+   if (m_window.IsKeyPressed(GLFW_KEY_ESCAPE)) {
+        m_running = false;
+   }
+
+   if (m_window.WasKeyPressed(GLFW_KEY_F1)) {
+        m_window.ToggleMouseCapture();
+   }
+
    m_PhysicsWorld.update(deltaTime, m_RigidBody);
 
+   if (m_window.IsMouseCaptured()) {
+        Vec3 MouseDelta = m_window.GetMouseDelta();
+        float sensitivity = 0.002f;
+
+        m_camera.Rotate(MouseDelta.x * sensitivity, MouseDelta.y * sensitivity);
+   }
    m_cubeRotation += 1.0f * deltaTime;
+  
 }
 
 void Application::render()
@@ -70,13 +106,20 @@ void Application::render()
 
     m_shader.bind();
 
-    Mat4 model = Mat4::RotationZ(m_cubeRotation);
+    Mat4 model = Mat4::RotationY(m_cubeRotation);
     m_shader.setMat4("model", model);
 
     Mat4 view = m_camera.getViewMatrix();
     m_shader.setMat4("view", view);
 
-    Mat4 projection = Mat4::Perspective(70.0f * 3.14159265 / 180.0f, 1600.0f / 900.0f, 0.1f, 100.0f);
+    int width;
+    int height;
+
+    m_window.GetWindowSize(width, height);
+
+    float aspect = static_cast<float>(width) / static_cast<float>(height);
+
+    Mat4 projection = Mat4::Perspective(70.0f * 3.14159265 / 180.0f, aspect, 0.1f, 100.0f);
     m_shader.setMat4("projection", projection);
 
     m_cube.draw();
