@@ -9,6 +9,7 @@
 #include "Engine/Renderer/Primitives.h"
 #include "Engine/Math/Mat4.h"
 #include "Engine/Renderer/Camera.h"
+#include "Engine/World/Terrain.h"
 #include <glad/gl.h>
 
 
@@ -34,6 +35,7 @@ private:
     Mesh m_cube;
     Shader m_shader;
     Camera m_camera;
+    Terrain m_terrain;
 
     ApplicationConfig m_config;
     RigidBody m_RigidBody;

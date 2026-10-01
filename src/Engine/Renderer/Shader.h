@@ -1,5 +1,6 @@
 #pragma once
-#include <Engine/Math/Mat4.h>
+#include "Engine/Math/Vec3.h"
+#include "Engine/Math/Mat4.h"
 #include <glad/gl.h>
 
 namespace Engine {
@@ -11,6 +12,7 @@ class Shader {
         void bind() const;
         
         void setMat4(const char* name, const Mat4& matrix) const;
+        void setVec3(const char* name, const Vec3& value) const;
     
     private:
         unsigned int m_program = 0;

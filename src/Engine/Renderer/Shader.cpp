@@ -83,6 +83,17 @@ void Shader::bind() const {
     glUseProgram(m_program);
 }
 
+void Shader::setVec3(const char* name, const Vec3& value) const {
+    int location = glGetUniformLocation(m_program, name);
+
+    glUniform3f(
+        location,
+        value.x,
+        value.y, 
+        value.z
+    );
+}
+
 void Shader::setMat4(const char* name, const Mat4& matrix) const {
     int location = glGetUniformLocation(m_program, name);
 

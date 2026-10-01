@@ -14,6 +14,9 @@ class Mesh {
             const unsigned int* indices,
             unsigned int indicesCount
         );
+
+        void SetData(const float* vertices, unsigned int vertexCount, const unsigned int* indices, unsigned int indicesCount);
+        
             
         void draw() const;
     

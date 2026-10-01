@@ -2,7 +2,17 @@
 
 namespace Engine {
 
+Mesh::Mesh()
+{
+    
+}
+
 Mesh::Mesh(const float* vertices, unsigned int vertexCount, const unsigned int* indices, unsigned int indicesCount)
+{
+    SetData(vertices, vertexCount, indices, indicesCount);
+}
+
+void Mesh::SetData(const float* vertices, unsigned int vertexCount, const unsigned int* indices, unsigned int indicesCount) 
 {
     m_indexCount = indicesCount;
 
@@ -25,7 +35,6 @@ Mesh::Mesh(const float* vertices, unsigned int vertexCount, const unsigned int* 
 
     glBindVertexArray(0);
 
-    
 }
 
 void Mesh::draw() const {

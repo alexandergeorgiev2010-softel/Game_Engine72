@@ -80,10 +80,18 @@ namespace Engine {
     }
 
     void Camera::MoveForward(float amount) {
+        /*Vec3 horizontalForward(m_front.x, 0.0f, m_front.z);
+
+        horizontalForward = horizontalForward.normalized();*/
+
         m_position += m_front * amount;
     }
 
     void Camera::MoveBackward(float amount) {
+       /* Vec3 horizontalForward(m_front.x, 0.0f, m_front.z);
+
+        horizontalForward = horizontalForward.normalized();*/
+
         m_position -= m_front * amount;
     }
 
