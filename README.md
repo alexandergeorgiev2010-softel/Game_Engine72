@@ -6,7 +6,7 @@ The goal is to understand how the systems inside a game engine work by implement
 
 ## Demo
 
-<video src="./demo.mp4" controls width="800"></video>
+[Watch the demo] (https://github.com/alexandergeorgiev2010-softel/Game_Engine72/blob/main/demo.mp4)
 
 ## Current Features
 
