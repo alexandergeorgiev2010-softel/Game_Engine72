@@ -1,6 +1,30 @@
 # Game Engine 72
 
-Learning project for building a small 3D engine in C++.
+A 3D game engine built from scratch in C++ and OpenGL as a learning project.
+
+The goal is to understand how the systems inside a game engine work by implementing them step by step.
+
+## Demo
+
+<video src="./demo.mp4" controls width="800"></video>
+
+## Current Features
+
+* Custom `Vec3` and `Mat4` math
+* OpenGL window and rendering
+* Shader compilation and uniforms
+* Mesh rendering with VAO, VBO and EBO
+* Perspective projection
+* 3D camera
+* WASD movement
+* Mouse look and mouse capture
+* Basic physics system
+* Procedural terrain generation
+* Terrain height variation
+* Multiple mesh instances
+* Model, view and projection transformations
+* Rotating cube instances
+* Basic colored rendering
 
 ## Build
 
@@ -14,10 +38,18 @@ make
 make run
 ```
 
-## Current Stage
+## What's Next
 
-The project currently has a minimal engine skeleton:
+* Surface normals
+* Lighting
+* Improved terrain generation
+* Terrain collision
+* Player system
+* World objects
+* Robots
+* AI
 
-- `Engine::Application` owns the main loop.
-- `SandboxApp.cpp` creates the application.
-- The main loop is intentionally small so we can understand it before adding graphics.
+## Project Goal
+
+This project is built from the ground up to learn how rendering, mathematics, physics, cameras, terrain, and eventually AI work internally in a game engine.
+
