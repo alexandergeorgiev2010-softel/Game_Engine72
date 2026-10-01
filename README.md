@@ -6,7 +6,7 @@ The goal is to understand how the systems inside a game engine work by implement
 
 ## Demo
 
-![[Game Engine 72](demo-thumbnail.png)](https://github.com/user-attachments/assets/d04b2684-c26e-44c0-9d30-0ce06ee7c3e0)
+<video src="https://github.com/user-attachments/assets/d04b2684-c26e-44c0-9d30-0ce06ee7c3e0" controls></video>
 
 ## Current Features
 
