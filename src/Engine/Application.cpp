@@ -81,7 +81,7 @@ void Application::update(float deltaTime, RigidBody& m_RigidBody)
         m_running = false;
    }
 
-   if (m_window.WasKeyPressed(GLFW_KEY_F1)) {
+   if (m_window.WasKeyPressed(GLFW_KEY_F1) || m_window.WasKeyPressed(GLFW_KEY_TAB)) {
         m_window.ToggleMouseCapture();
    }
 
@@ -110,6 +110,7 @@ void Application::render()
     Mat4 TerrainModel;
     m_shader.setMat4("model", TerrainModel);
     m_shader.setVec3("color", Vec3(0.1f, 0.7f, 0.1f));
+    m_shader.setVec3("lightPosition", Vec3(100.0f, 100.0f, 100.0f));
 
    
 
@@ -127,6 +128,8 @@ void Application::render()
     m_shader.setMat4("projection", projection);
 
     m_terrain.draw();
+
+    std::cout<<"Terrain Drawn"<<std::endl;
 
     float Cube_offset_x = 0;
     float Cube_offset_y = 0;

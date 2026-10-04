@@ -8,6 +8,8 @@ struct Vec3 {
     float y;
     float z;
 
+    Vec3(): x(0.0f), y(0.0f), z(0.0f) {}
+
     Vec3(float inputX, float inputY, float inputZ): x(inputX), y(inputY), z(inputZ) {}
 
     Vec3 operator+(const Vec3& other) const
