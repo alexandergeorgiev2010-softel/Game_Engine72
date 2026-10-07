@@ -44,8 +44,6 @@ make run
 
 ## What's Next
 
-* Surface normals
-* Lighting
 * Improved terrain generation
 * Terrain collision
 * Player system
