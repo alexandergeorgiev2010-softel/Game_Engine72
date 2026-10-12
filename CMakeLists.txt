@@ -17,6 +17,8 @@ add_executable(Game_Engine72
     src/Engine/Renderer/Shader.cpp
     src/Engine/Renderer/Camera.cpp
     src/Engine/World/Terrain.cpp
+    src/Engine/World/World.cpp
+    src/Engine/World/WorldObject.cpp
     third_party/glad/src/gl.c
 )
 

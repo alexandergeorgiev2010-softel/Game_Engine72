@@ -84,7 +84,8 @@ namespace Engine {
 
         horizontalForward = horizontalForward.normalized();*/
 
-        m_position += m_front * amount;
+        m_speed = m_sprinting ? m_sprintSpeed : m_walkSpeed;
+        m_position += m_speed * m_front * amount;
     }
 
     void Camera::MoveBackward(float amount) {
@@ -92,14 +93,21 @@ namespace Engine {
 
         horizontalForward = horizontalForward.normalized();*/
 
-        m_position -= m_front * amount;
+        m_speed = m_sprinting ? m_sprintSpeed : m_walkSpeed;
+        m_position -= m_speed * m_front * amount;
     }
 
     void Camera::MoveRight(float amount) {
-        m_position += m_right * amount;
+        m_speed = m_sprinting ? m_sprintSpeed : m_walkSpeed;
+        m_position += m_speed * m_right * amount;
     }
 
     void Camera::MoveLeft(float amount) {
-        m_position -= m_right * amount;
+        m_speed = m_sprinting ? m_sprintSpeed : m_walkSpeed;
+        m_position -= m_speed * m_right * amount;
+    }
+
+    void Camera::SetSprinting(bool sprinting) {
+        m_sprinting = sprinting;
     }
 }

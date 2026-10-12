@@ -122,5 +122,15 @@ namespace Engine {
 
             return result;
         }
+
+        static Mat4 Scale(float x, float y, float z) {
+            Mat4 result;
+
+            result.m[0][0] = x;
+            result.m[1][1] = y;
+            result.m[2][2] = z;
+
+            return result;
+        }
     };
 }

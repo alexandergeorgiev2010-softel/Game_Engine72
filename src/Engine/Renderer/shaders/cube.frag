@@ -1,28 +1,25 @@
 #version 410 core
 
 uniform vec3 color;
-out vec4 FragColor;
+uniform vec3 lightPosition;
 
 in vec3 vNormal;
 in vec4 vPos;
 
-uniform vec3 lightPosition;
-vec3 lightDirection;
-
-
+out vec4 FragColor;
 
 void main() {
-    vec3 v_Pos = vec3(vPos);
+    vec3 WorldPosition = vec3(vPos);
 
-    lightDirection = lightPosition - v_Pos;
-    lightDirection = normalize(lightDirection);
-    
-    vec3 NormalizedNormal = normalize(vNormal);
+    vec3 lightDirection = normalize(lightPosition - WorldPosition);
+    vec3 normal = normalize(vNormal);
 
-    float diffuse = dot(NormalizedNormal, lightDirection);
-    diffuse = max(diffuse, 0.0);
+    float diffuse = max(dot(normal, lightDirection), 0);
 
-    vec3 LightenedColor = diffuse * color;
+    float ambient = 0.25;
 
-    FragColor = vec4(LightenedColor, 1.0);
+    vec3 lighting = vec3(ambient) + vec3(0.75 * diffuse);
+    vec3 finalColor = color * lighting;
+
+    FragColor = vec4(finalColor, 1.0);
 }

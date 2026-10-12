@@ -20,6 +20,8 @@ namespace Engine {
             void MoveBackward(float amont);
             void MoveRight(float amount);
             void MoveLeft(float amount);
+
+            void SetSprinting(bool sprinting);
         
         private:
             void UpdateDirection();
@@ -32,5 +34,10 @@ namespace Engine {
             Vec3 m_front{0.0f, 0.0f, -1.0f};
             Vec3 m_right{1.0f, 0.0f, 0.0f};
             Vec3 m_up{0.0f, 1.0f, 0.0f};
+
+            float m_speed = 1.75f;
+            bool m_sprinting = false;
+            float m_walkSpeed = 1.75f;
+            float m_sprintSpeed = 4.0f;
     };
 }

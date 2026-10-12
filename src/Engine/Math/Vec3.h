@@ -72,4 +72,12 @@ struct Vec3 {
     }
 };
 
+inline Vec3 operator*(float scalar, const Vec3& vec) {
+    return {
+        vec.x * scalar,
+        vec.y * scalar,
+        vec.z * scalar
+    };
+}
+
 }

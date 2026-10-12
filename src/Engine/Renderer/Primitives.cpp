@@ -1,7 +1,8 @@
 #include "Engine/Renderer/Mesh.h"
 #include "Engine/Renderer/Primitives.h"
 #include "Engine/Math/Vec3.h"
-
+#include <vector>
+#include <cmath>
 
 namespace Engine {
 
@@ -123,6 +124,63 @@ Mesh Primitives::createCube() {
     }
 
     return Mesh(combinedVerticesNormals, 24, indices, 36);
+}
+
+Mesh Primitives::createSphere(float radius, unsigned int sectors, unsigned int stacks) {
+    std::vector<float> vertices;
+    std::vector<unsigned int> indices;
+
+    constexpr float PI = 3.14159265358979323846f;
+
+    if (radius <= 0.0f || sectors < 3 || stacks < 2) {
+        return Mesh();
+    }
+
+    for (unsigned int i = 0; i <= stacks; i ++) {
+        float stackAngle = PI / 2.0f - static_cast<float>(i) * PI / static_cast<float>(stacks);
+
+        float xy = radius * std::cos(stackAngle);
+        float z = radius * std::sin(stackAngle);
+
+        for (unsigned int j = 0; j <= sectors; j ++) {
+            float sectorAngle = static_cast<float>(j) * 2.0f * PI / static_cast<float>(sectors);
+
+            float x = xy * std::cos(sectorAngle);
+            float y = xy * std::sin(sectorAngle);
+
+            vertices.push_back(x);
+            vertices.push_back(y);
+            vertices.push_back(z);
+
+            vertices.push_back(x / radius);
+            vertices.push_back(y / radius);
+            vertices.push_back(z / radius);
+        }
+    }
+
+    for (unsigned int i = 0; i < stacks; i ++) {
+        unsigned int k1 = i * (sectors + 1);
+        unsigned int k2 = k1 + sectors + 1;
+
+        for (unsigned int j = 0; j < sectors; ++j, ++k1, ++k2) {
+            if (i != 0) {
+                indices.push_back(k1);
+                indices.push_back(k2);
+                indices.push_back(k1 + 1);
+            }
+
+            if (i != (stacks - 1)) {
+                indices.push_back(k1 + 1);
+                indices.push_back(k2);
+                indices.push_back(k2 + 1);
+            }
+        }
+    }
+
+    Mesh sphere;
+    sphere.SetData(vertices.data(), vertices.size(), indices.data(), indices.size());
+
+    return sphere;
 }
 
 }
