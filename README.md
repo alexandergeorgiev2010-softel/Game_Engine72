@@ -7,10 +7,17 @@ The goal is to understand how the systems inside a game engine work by implement
 ## Demo
 
 Demo1
-<video src="https://github.com/user-attachments/assets/d04b2684-c26e-44c0-9d30-0ce06ee7c3e0" controls></video>
+
+https://github.com/user-attachments/assets/dfdab3f8-4770-43d5-acf7-47871d34a51f
+
 
 Demo2
-<video src="https://github.com/user-attachments/assets/9abc785b-e92d-4ce3-864f-056919b3b0d2" controls></video>
+
+
+
+https://github.com/user-attachments/assets/bf4151f6-b83b-4b3d-b8e1-90cf86f7b534
+
+
 
 ## Current Features
 
