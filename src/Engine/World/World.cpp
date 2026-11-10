@@ -2,7 +2,7 @@
 
 namespace Engine {
     World::World()
-        : m_terrain(4000.0f, 4000.0f, 2000)
+        : m_terrain(4000.0f, 4000.0f, 300)
     {
     }
 

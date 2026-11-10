@@ -156,9 +156,6 @@ void Application::update(float deltaTime, RigidBody& m_RigidBody)
 
 void Application::render()
 {
-
-    std::cout << "Render frame " << m_frame << '\n';
-
     glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -181,7 +178,7 @@ void Application::render()
 
     float aspect = static_cast<float>(width) / static_cast<float>(height);
 
-     Mat4 projection = Mat4::Perspective(70.0f * 3.14159265 / 180.0f, aspect, 0.1f, 100.0f);
+     Mat4 projection = Mat4::Perspective(70.0f * 3.14159265 / 180.0f, aspect, 0.1f, 1000.0f);
      m_shader.setMat4("projection", projection);
 
      m_world.draw();
@@ -278,7 +275,6 @@ void Application::render()
      m_shader.setVec3("color", Vec3(0.2f, 0.2f, 0.25f));
      m_robotRightLeg.draw();
 
-    std::cout<<"World Drawn"<<std::endl;
 
     float Cube_offset_x = 0;
     float Cube_offset_y = 0;

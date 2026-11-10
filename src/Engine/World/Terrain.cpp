@@ -21,7 +21,7 @@ namespace Engine {
             for (unsigned int column = 0; column <= resolution; column ++) {
                 float x = -width / 2.0f + column * CellWidth;
                 float z = -depth / 2.0f + row * CellDepth;
-                float y = std::sin(x) * std::cos(z);
+                float y = std::sin(x * 0.02f) * std::cos(z * 0.02f);
                 
                 vertices.push_back(x);
                 vertices.push_back(y);
