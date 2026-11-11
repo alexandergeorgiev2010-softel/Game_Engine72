@@ -5,7 +5,17 @@ project(Game_Engine72)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(glfw3 3.5 REQUIRED PATHS /usr/local/Cellar/glfw/3.5.1/lib/cmake)
+if(APPLE)
+    find_package(glfw3 3.5 REQUIRED
+        PATHS /usr/local/Cellar/glfw/3.5.1/lib/cmake
+    )
+elseif(UNIX)
+    find_package(glfw3 3.5 REQUIRED
+        PATHS "$ENV{HOME}/.local/opt/glfw/lib/cmake/glfw3"
+    )
+elseif(WIN32)
+    find_package(glfw3 3.5 REQUIRED)
+endif()
 
 add_executable(Game_Engine72
     src/Engine/Application.cpp
