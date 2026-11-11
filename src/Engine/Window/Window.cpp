@@ -22,6 +22,19 @@ namespace Engine {
         }
 
         glfwMakeContextCurrent(static_cast<GLFWwindow*>(m_window));
+    
+        if (!gladLoadGL(GLADloadfunc(glfwGetProcAddress))) {
+            std::cout << "Failed to initialize GLAD" << "\n";
+            return;
+        }
+        glViewport(0, 0, width, height);
+
+        glfwSetFramebufferSizeCallback(
+            static_cast<GLFWwindow*>(m_window),
+            [](GLFWwindow* window, int width, int height) {
+                glViewport(0, 0, width, height);
+            }
+        );
 
         if (!gladLoadGL(GLADloadfunc(glfwGetProcAddress))) {
             std::cout << "Failed to initialize GLAD" << "\n";
