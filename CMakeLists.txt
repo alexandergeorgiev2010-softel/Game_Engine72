@@ -29,6 +29,7 @@ add_executable(Game_Engine72
     src/Engine/World/Terrain.cpp
     src/Engine/World/World.cpp
     src/Engine/World/WorldObject.cpp
+    src/Engine/World/Robot.cpp
     third_party/glad/src/gl.c
 )
 

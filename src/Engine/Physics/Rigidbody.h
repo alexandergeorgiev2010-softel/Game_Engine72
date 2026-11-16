@@ -14,6 +14,10 @@ class RigidBody {
             return m_position;
         }
 
+        const Vec3& get_m_position() const {
+            return m_position;
+        }
+
         Vec3& get_m_velocity(){
             return m_velocity;
         }
