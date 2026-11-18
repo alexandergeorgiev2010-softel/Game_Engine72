@@ -1,4 +1,3 @@
-
 #pragma once
 
 #include "Engine/Math/Vec3.h"
@@ -8,6 +7,7 @@
 #include "Engine/Renderer/Shader.h"
 #include "Engine/World/WorldObject.h"
 #include "Engine/Physics/AABB.h"
+#include "Engine/World/World.h"
 
 namespace Engine {
 
@@ -23,8 +23,8 @@ public:
     void update(float deltaTime, PhysicsWorld& physicsWorld);
     void draw() const;
 
-    void moveForward(float amount);
-    void moveBackward(float amount);
+    void moveForward(float amount, const World& world);
+    void moveBackward(float amount, const World& world);
     void rotate(float amount);
 
     Vec3 getPosition() const;
@@ -56,7 +56,9 @@ private:
     WorldObject m_leftLeg;
     WorldObject m_rightLeg;
 
-    AABB getAABB() const;
+    AABB getAABBAt(const Vec3& position) const;
+    bool canOccupy(const Vec3& position, const World& world) const;
+
     void updatePartTransforms();
 };
 

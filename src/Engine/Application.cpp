@@ -112,11 +112,11 @@ void Application::update(float deltaTime)
     float robotSpeed = 9.0f;
 
     if (m_window.IsKeyPressed(GLFW_KEY_UP)) {
-        m_robot.moveForward(robotSpeed * deltaTime);
+        m_robot.moveForward(robotSpeed * deltaTime, m_world);
     }
 
     if (m_window.IsKeyPressed(GLFW_KEY_DOWN)) {
-        m_robot.moveBackward(robotSpeed * deltaTime);
+        m_robot.moveBackward(robotSpeed * deltaTime, m_world);
     }
 
     if (m_window.IsKeyPressed(GLFW_KEY_LEFT)) {
@@ -168,10 +168,25 @@ void Application::render()
 
      m_world.draw();
 
-     Mat4 obstacleModel = Mat4::Translation(0.0f, 1.0f, -10.0f) * Mat4::Scale(2.0f, 1.0f, 2.0f);
-     m_shader.setMat4("model", obstacleModel);
-     m_shader.setVec3("color", Vec3(0.9f, 0.2f, 0.1f));
-     m_cube.draw();
+    for (const Obstacle& obstacle : m_world.getObstacles()) {
+          Mat4 obstacleModel =
+               Mat4::Translation(
+                    obstacle.position.x,
+                    obstacle.position.y,
+                    obstacle.position.z
+               )
+               *
+               Mat4::Scale(
+                    obstacle.scale.x,
+                    obstacle.scale.y,
+                    obstacle.scale.z
+               );
+
+          m_shader.setMat4("model", obstacleModel);
+          m_shader.setVec3("color", Vec3(0.9f, 0.2f, 0.1f));
+
+          m_cube.draw();
+     }
 
      m_robot.draw();
 

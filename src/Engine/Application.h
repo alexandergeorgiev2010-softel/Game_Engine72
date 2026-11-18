@@ -10,7 +10,6 @@
 #include "Engine/Math/Mat4.h"
 #include "Engine/Renderer/Camera.h"
 #include "Engine/World/World.h"
-#include "Engine/Physics/AABB.h"
 #include "Engine/World/Robot.h"
 #include <glad/gl.h>
 
@@ -52,11 +51,6 @@ private:
 
     float m_wTapTimer = 0.0f;
     bool m_WaitingForSecondWTap = false;
-    
-    AABB m_obstacleAABB {
-        Vec3(-2.0f, 0.0f, -12.0f),
-        Vec3(2.0f, 2.0f, -8.0f)
-    };
 };
 
 }
