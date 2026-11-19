@@ -56,6 +56,10 @@ struct Vec3 {
     Vec3 normalized() const {
         float len = length();
 
+        if (len <= 0.000001f) {
+            return Vec3();
+        }
+
         return Vec3(x / len, y / len, z / len);
     }
 
