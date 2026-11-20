@@ -38,15 +38,22 @@ void Application::run()
 
     auto lastFrameTime = std::chrono::steady_clock::now();
     while (m_running) {
+        m_profiler.BeginFrame();
+
         m_window.PollEvents();
 
         const auto currentFrameTime = std::chrono::steady_clock::now();
         const std::chrono::duration<float> frameDuration = currentFrameTime - lastFrameTime;
         const float deltaTime = frameDuration.count();
         lastFrameTime = currentFrameTime;
-
+        
+        m_profiler.BeginUpdate();
         update(deltaTime);
+        m_profiler.EndUpdate();
+
+        m_profiler.BeginRender();
         render();
+        m_profiler.EndRender();
 
         ++m_frame;
         if (/*m_frame >= m_config.maxFrames ||*/ m_window.ShouldClose()) {
@@ -54,6 +61,8 @@ void Application::run()
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(16));
+
+        m_profiler.EndFrame();
     }
 
     std::cout << "Application stopped.\n";

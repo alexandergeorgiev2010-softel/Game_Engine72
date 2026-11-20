@@ -11,6 +11,7 @@
 #include "Engine/Renderer/Camera.h"
 #include "Engine/World/World.h"
 #include "Engine/World/Robot.h"
+#include "Engine/Debug/Profiler.h"
 #include <glad/gl.h>
 
 
@@ -44,6 +45,8 @@ private:
 
     ApplicationConfig m_config;
     PhysicsWorld m_PhysicsWorld;
+
+    Profiler m_profiler;
     
     bool m_running = true;
     int m_frame = 0;

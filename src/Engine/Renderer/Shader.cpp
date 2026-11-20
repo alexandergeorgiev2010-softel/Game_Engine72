@@ -97,7 +97,7 @@ void Shader::setVec3(const char* name, const Vec3& value) const {
 void Shader::setMat4(const char* name, const Mat4& matrix) const {
     int location = glGetUniformLocation(m_program, name);
 
-    std::cout << "Uniform : " << name << " | location: " << location;
+    //std::cout << "Uniform : " << name << " | location: " << location;
 
     glUniformMatrix4fv(
         location,
