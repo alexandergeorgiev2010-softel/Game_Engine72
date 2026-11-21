@@ -8,6 +8,7 @@
 #include "Engine/World/WorldObject.h"
 #include "Engine/Physics/AABB.h"
 #include "Engine/World/World.h"
+#include "Engine/Sensors/RaySensor.h"
 
 namespace Engine {
 
@@ -20,7 +21,7 @@ public:
         const Vec3& position
     );
 
-    void update(float deltaTime, PhysicsWorld& physicsWorld);
+    void update(float deltaTime, PhysicsWorld& physicsWorld, const World& world);
     void draw() const;
 
     void moveForward(float amount, const World& world);
@@ -30,10 +31,16 @@ public:
     Vec3 getPosition() const;
     float getRotation() const;
 
+    const RaySensor& getRaySensor() const {
+        return m_raySensor;
+    }
+
 private:
     RigidBody m_rigidBody;
     float m_rotation = 0.0f;
-    Shader &m_shader;
+    Shader& m_shader;
+
+    RaySensor m_raySensor;
 
     WorldObject m_torso;
     WorldObject m_head;

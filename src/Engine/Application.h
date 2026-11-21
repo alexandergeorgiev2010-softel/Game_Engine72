@@ -12,6 +12,7 @@
 #include "Engine/World/World.h"
 #include "Engine/World/Robot.h"
 #include "Engine/Debug/Profiler.h"
+#include "Engine/Sensors/RaySensor.h"
 #include <glad/gl.h>
 
 

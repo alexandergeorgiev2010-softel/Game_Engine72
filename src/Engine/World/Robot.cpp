@@ -49,6 +49,7 @@ namespace Engine {
     )
         : m_rigidBody(position, Vec3(0, 0, 0), 1.0f, true),
           m_shader(shader),
+          m_raySensor(20.0f),
           m_torso(cube, shader),
           m_head(cube, shader),
           m_leftEye(sphere, shader),
@@ -67,10 +68,25 @@ namespace Engine {
         updatePartTransforms();
     }
 
-    void Robot::update(float deltaTime, PhysicsWorld& physicsWorld)
+    void Robot::update(float deltaTime, PhysicsWorld& physicsWorld, const World& world)
     {
         physicsWorld.update(deltaTime, m_rigidBody);
+
         updatePartTransforms();
+
+        const Vec3 position = m_rigidBody.get_m_position();
+
+        const Vec3 sensorOrigin =
+            position + rotateOffset(Vec3(0.0f, 4.0f, 1.7f), m_rotation);
+
+        const Vec3 sensorDirection(
+            std::sin(m_rotation),
+            0.0f,
+            std::cos(m_rotation)
+        );
+
+        m_raySensor.UpdateRay(sensorOrigin, sensorDirection);
+        m_raySensor.Update(world);
     }
 
    

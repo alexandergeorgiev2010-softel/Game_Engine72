@@ -136,7 +136,7 @@ void Application::update(float deltaTime)
         m_robot.rotate(-2.0f * deltaTime);
     }
 
-    m_robot.update(deltaTime, m_PhysicsWorld);
+    m_robot.update(deltaTime, m_PhysicsWorld, m_world);
 
     if (m_window.IsMouseCaptured()) {
         Vec3 MouseDelta = m_window.GetMouseDelta();
@@ -199,38 +199,33 @@ void Application::render()
 
      m_robot.draw();
 
+     const RaySensor& sensor = m_robot.getRaySensor();
+     const Vec3 origin = sensor.GetOrigin();
+     const Vec3 direction = sensor.GetDirection();
+     const float rayLength = sensor.GetDistance();
+     const Vec3 rayCenter =
+     origin + direction * (rayLength * 0.5f);
 
-    float Cube_offset_x = 0;
-    float Cube_offset_y = 0;
+     Mat4 sensorMarkerModel =
+     Mat4::Translation(origin.x, origin.y, origin.z) *
+     Mat4::Scale(0.15f, 0.15f, 0.15f);
+     m_shader.setMat4("model", sensorMarkerModel);
+     m_shader.setVec3("color", Vec3(1.0f, 1.0f, 0.0f));
+     m_sphere.draw();
 
-    Mat4 Cube_Model1[20];
-    for (int i = 1; i <= 20; i ++) {
-        Cube_offset_x += i * 3.0f;
-        Cube_offset_y += i * 3.0f;
-        Cube_Model1[i - 1] = Mat4::Translation(Cube_offset_x, Cube_offset_y, 0.0f) * Mat4::RotationY(m_cubeRotation);
-        m_shader.setMat4("model", Cube_Model1[i - 1]);
-        m_shader.setVec3("color", Vec3(0.8f, 0.2f, 0.2f));
-        m_cube.draw();
-    }
-    
-    Mat4 Cube_Model2[20];
+     Mat4 rayModel =
+     Mat4::Translation(rayCenter.x, rayCenter.y, rayCenter.z) *
+     Mat4::RotationY(m_robot.getRotation()) *
+     Mat4::Scale(0.035f, 0.035f, rayLength * 0.5f);
+     m_shader.setMat4("model", rayModel);
 
-    Cube_offset_x = 0.0f;
-    Cube_offset_y = 0.0f;
+     if (sensor.HasHit()) {
+         m_shader.setVec3("color", Vec3(1.0f, 0.0f, 0.0f));
+     } else {
+         m_shader.setVec3("color", Vec3(0.0f, 1.0f, 0.0f));
+     }
 
-    for (int i = 1; i <= 20; i ++) {
-        Cube_offset_x -= i * 3.0f;
-        Cube_offset_y += i * 3.0f;
-
-        Cube_Model2[i - 1] = Mat4::Translation(Cube_offset_x, Cube_offset_y, 0.0f) * Mat4::RotationY(m_cubeRotation);
-        m_shader.setMat4("model", Cube_Model2[i - 1]);
-        m_shader.setVec3("color", Vec3(0.1f, 0.1f, 0.8f));
-        m_cube.draw();
-    }
-
-
-    
-
+     m_cube.draw();
     
     m_window.SwapBuffers();
 }
