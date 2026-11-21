@@ -70,7 +70,7 @@ void Application::run()
 
 void Application::update(float deltaTime)
 {
-    float speed = 5.0f;
+    float speed = 20.0f;
 
     if (m_WaitingForSecondWTap) {
         m_wTapTimer -= deltaTime;
@@ -118,7 +118,7 @@ void Application::update(float deltaTime)
         m_window.ToggleMouseCapture();
     }
 
-    float robotSpeed = 9.0f;
+    float robotSpeed = 20.0f;
 
     if (m_window.IsKeyPressed(GLFW_KEY_UP)) {
         m_robot.moveForward(robotSpeed * deltaTime, m_world);

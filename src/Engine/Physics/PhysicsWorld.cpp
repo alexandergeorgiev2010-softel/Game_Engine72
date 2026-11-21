@@ -2,21 +2,29 @@
 #include <cmath>
 
 namespace Engine {
-    void PhysicsWorld::update(float deltaTime, RigidBody& m_RigidBody) {
-        if (!m_RigidBody.get_m_isResting()) {
-            m_RigidBody.get_m_velocity() += m_gravity * deltaTime;
-            m_RigidBody.get_m_position() += m_RigidBody.get_m_velocity() * deltaTime;
+
+    void PhysicsWorld::update(float deltaTime, RigidBody& rigidBody, float groundHeight) 
+    {
+        if (!rigidBody.get_m_isResting()) {
+            rigidBody.get_m_velocity() += m_gravity * deltaTime;
+            rigidBody.get_m_position() += rigidBody.get_m_velocity() * deltaTime;
         }
 
-        if (m_RigidBody.get_m_position().y < m_groundHeight) {
-            m_RigidBody.get_m_position().y = m_groundHeight;
+        if (rigidBody.get_m_position().y < groundHeight) {
+            rigidBody.get_m_position().y = groundHeight;
 
-            if (std::abs(m_RigidBody.get_m_velocity().y) < m_RigidBody.get_m_bouncing_threshold()) {
-                m_RigidBody.get_m_velocity().y = 0.0f;
-                m_RigidBody.get_m_isResting() = true;
+            if (std::abs(rigidBody.get_m_velocity().y) <
+                rigidBody.get_m_bouncing_threshold()) {
+
+                rigidBody.get_m_velocity().y = 0.0f;
+                rigidBody.get_m_isResting() = true;
+
             } else {
-                m_RigidBody.get_m_velocity().y = -m_RigidBody.get_m_velocity().y * m_RigidBody.get_m_restitution();
+                rigidBody.get_m_velocity().y =
+                    -rigidBody.get_m_velocity().y *
+                    rigidBody.get_m_restitution();
             }
         }
     }
+
 }

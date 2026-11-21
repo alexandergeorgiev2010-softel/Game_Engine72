@@ -8,18 +8,20 @@
 namespace Engine {
 
     class World {
-        public:
-            World();
+    public:
+        World();
 
-            void draw() const;
+        void draw() const;
 
-            bool hasCollision(const AABB& bounds) const;
+        bool hasCollision(const AABB& bounds) const;
 
-            const std::vector<Obstacle>& getObstacles() const;
+        const std::vector<Obstacle>& getObstacles() const;
 
-        private:
-            Terrain m_terrain;
-            std::vector<Obstacle> m_obstacles;
+        float GetTerrainHeight(float x, float z) const;
+
+    private:
+        Terrain m_terrain;
+        std::vector<Obstacle> m_obstacles;
     };
 
 }

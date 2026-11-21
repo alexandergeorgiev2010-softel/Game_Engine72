@@ -70,14 +70,24 @@ namespace Engine {
 
     void Robot::update(float deltaTime, PhysicsWorld& physicsWorld, const World& world)
     {
-        physicsWorld.update(deltaTime, m_rigidBody);
+        const Vec3 position = m_rigidBody.get_m_position();
+
+        const float groundHeight = world.GetTerrainHeight(
+            position.x,
+            position.z
+        );
+
+        physicsWorld.update(deltaTime, m_rigidBody,groundHeight);
 
         updatePartTransforms();
 
-        const Vec3 position = m_rigidBody.get_m_position();
+        const Vec3 updatedPosition = m_rigidBody.get_m_position();
 
         const Vec3 sensorOrigin =
-            position + rotateOffset(Vec3(0.0f, 4.0f, 1.7f), m_rotation);
+            updatedPosition + rotateOffset(
+                Vec3(0.0f, 4.0f, 1.7f),
+                m_rotation
+            );
 
         const Vec3 sensorDirection(
             std::sin(m_rotation),
