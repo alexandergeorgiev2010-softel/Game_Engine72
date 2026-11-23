@@ -34,6 +34,8 @@ add_executable(Game_Engine72
     src/Engine/Sensors/RaySensor.cpp
     src/Engine/Debug/Profiler.cpp
     src/Engine/Procedural/PerlinNoise.cpp
+    src/Engine/Controllers/HumanController.cpp
+    src/Engine/Controllers/RuleBasedController.cpp
     third_party/glad/src/gl.c
 )
 

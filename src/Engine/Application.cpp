@@ -1,4 +1,6 @@
 #include "Engine/Application.h"
+#include "Engine/Controllers/HumanController.h"
+#include "Engine/Controllers/RuleBasedController.h"
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
@@ -7,17 +9,15 @@
 #include <thread>
 #include <utility>
 
-
-
 namespace Engine {
 
 Application::Application(ApplicationConfig config)
     : m_window(1600, 900, "Game Engine 72"),
       m_cube(Primitives::createCube()),
       m_sphere(Primitives::createSphere()),
-      m_shader("src/Engine/Renderer/shaders/cube.vert",
-               "src/Engine/Renderer/shaders/cube.frag"),
+      m_shader("src/Engine/Renderer/shaders/cube.vert", "src/Engine/Renderer/shaders/cube.frag"),
       m_robot(m_cube, m_sphere, m_shader, Vec3(0, 0, 0)),
+      m_controller(std::make_unique<RuleBasedController>()),
       m_camera({0.0f, 5.0f, 10.0f}),
       m_world(),
       m_config(std::move(config)),
@@ -33,10 +33,8 @@ void Application::run()
 
     std::cout << "Starting " << m_config.name << '\n';
 
-    
-
-
     auto lastFrameTime = std::chrono::steady_clock::now();
+
     while (m_running) {
         m_profiler.BeginFrame();
 
@@ -46,7 +44,7 @@ void Application::run()
         const std::chrono::duration<float> frameDuration = currentFrameTime - lastFrameTime;
         const float deltaTime = frameDuration.count();
         lastFrameTime = currentFrameTime;
-        
+
         m_profiler.BeginUpdate();
         update(deltaTime);
         m_profiler.EndUpdate();
@@ -56,6 +54,7 @@ void Application::run()
         m_profiler.EndRender();
 
         ++m_frame;
+
         if (/*m_frame >= m_config.maxFrames ||*/ m_window.ShouldClose()) {
             m_running = false;
         }
@@ -118,23 +117,7 @@ void Application::update(float deltaTime)
         m_window.ToggleMouseCapture();
     }
 
-    float robotSpeed = 20.0f;
-
-    if (m_window.IsKeyPressed(GLFW_KEY_UP)) {
-        m_robot.moveForward(robotSpeed * deltaTime, m_world);
-    }
-
-    if (m_window.IsKeyPressed(GLFW_KEY_DOWN)) {
-        m_robot.moveBackward(robotSpeed * deltaTime, m_world);
-    }
-
-    if (m_window.IsKeyPressed(GLFW_KEY_LEFT)) {
-        m_robot.rotate(2.0f * deltaTime);
-    }
-
-    if (m_window.IsKeyPressed(GLFW_KEY_RIGHT)) {
-        m_robot.rotate(-2.0f * deltaTime);
-    }
+    m_controller->update(deltaTime, m_window, m_robot, m_world);
 
     m_robot.update(deltaTime, m_PhysicsWorld, m_world);
 
@@ -160,8 +143,6 @@ void Application::render()
     m_shader.setVec3("color", Vec3(0.1f, 0.7f, 0.1f));
     m_shader.setVec3("lightPosition", Vec3(100.0f, 100.0f, 100.0f));
 
-   
-
     Mat4 view = m_camera.getViewMatrix();
     m_shader.setMat4("view", view);
 
@@ -172,61 +153,93 @@ void Application::render()
 
     float aspect = static_cast<float>(width) / static_cast<float>(height);
 
-     Mat4 projection = Mat4::Perspective(70.0f * 3.14159265 / 180.0f, aspect, 0.1f, 1000.0f);
-     m_shader.setMat4("projection", projection);
+    Mat4 projection = Mat4::Perspective(70.0f * 3.14159265 / 180.0f, aspect, 0.1f, 1000.0f);
+    m_shader.setMat4("projection", projection);
 
-     m_world.draw();
+    m_world.draw();
 
     for (const Obstacle& obstacle : m_world.getObstacles()) {
-          Mat4 obstacleModel =
-               Mat4::Translation(
-                    obstacle.position.x,
-                    obstacle.position.y,
-                    obstacle.position.z
-               )
-               *
-               Mat4::Scale(
-                    obstacle.scale.x,
-                    obstacle.scale.y,
-                    obstacle.scale.z
-               );
+        Mat4 obstacleModel = Mat4::Translation(obstacle.position.x, obstacle.position.y, obstacle.position.z) *
+                             Mat4::Scale(obstacle.scale.x, obstacle.scale.y, obstacle.scale.z);
 
-          m_shader.setMat4("model", obstacleModel);
-          m_shader.setVec3("color", Vec3(0.9f, 0.2f, 0.1f));
+        m_shader.setMat4("model", obstacleModel);
+        m_shader.setVec3("color", Vec3(0.9f, 0.2f, 0.1f));
 
-          m_cube.draw();
-     }
+        m_cube.draw();
+    }
 
-     m_robot.draw();
+    // Goal marker - base
+    const Vec3& goal = m_world.GetGoalPosition();
 
-     const RaySensor& sensor = m_robot.getRaySensor();
-     const Vec3 origin = sensor.GetOrigin();
-     const Vec3 direction = sensor.GetDirection();
-     const float rayLength = sensor.GetDistance();
-     const Vec3 rayCenter =
-     origin + direction * (rayLength * 0.5f);
+    Mat4 goalBaseModel = Mat4::Translation(goal.x, goal.y + 0.3f, goal.z) *
+                         Mat4::Scale(3.0f, 0.3f, 3.0f);
 
-     Mat4 sensorMarkerModel =
-     Mat4::Translation(origin.x, origin.y, origin.z) *
-     Mat4::Scale(0.15f, 0.15f, 0.15f);
-     m_shader.setMat4("model", sensorMarkerModel);
-     m_shader.setVec3("color", Vec3(1.0f, 1.0f, 0.0f));
-     m_sphere.draw();
+    m_shader.setMat4("model", goalBaseModel);
+    m_shader.setVec3("color", Vec3(0.0f, 1.0f, 0.2f));
 
-     Mat4 rayModel =
-     Mat4::Translation(rayCenter.x, rayCenter.y, rayCenter.z) *
-     Mat4::RotationY(m_robot.getRotation()) *
-     Mat4::Scale(0.035f, 0.035f, rayLength * 0.5f);
-     m_shader.setMat4("model", rayModel);
+    m_cube.draw();
 
-     if (sensor.HasHit()) {
-         m_shader.setVec3("color", Vec3(1.0f, 0.0f, 0.0f));
-     } else {
-         m_shader.setVec3("color", Vec3(0.0f, 1.0f, 0.0f));
-     }
+    // Goal marker - pillar
+    Mat4 goalPillarModel = Mat4::Translation(goal.x, goal.y + 3.5f, goal.z) *
+                           Mat4::Scale(0.7f, 3.2f, 0.7f);
 
-     m_cube.draw();
-    
+    m_shader.setMat4("model", goalPillarModel);
+    m_shader.setVec3("color", Vec3(0.0f, 1.0f, 0.2f));
+
+    m_cube.draw();
+
+    // Goal marker - top
+    Mat4 goalTopModel = Mat4::Translation(goal.x, goal.y + 7.5f, goal.z) *
+                        Mat4::Scale(1.5f, 1.5f, 1.5f);
+
+    m_shader.setMat4("model", goalTopModel);
+    m_shader.setVec3("color", Vec3(1.0f, 1.0f, 0.0f));
+
+    m_sphere.draw();
+
+    m_robot.draw();
+
+    constexpr float sensorAngles[5] = {
+        -1.04719755f,
+        -0.52359878f,
+         0.0f,
+         0.52359878f,
+         1.04719755f
+    };
+
+    const auto& sensors = m_robot.getRaySensors();
+
+    for (unsigned int i = 0; i < sensors.size(); i++) {
+        const RaySensor& sensor = sensors[i];
+
+        const Vec3 origin = sensor.GetOrigin();
+        const Vec3 direction = sensor.GetDirection();
+        const float rayLength = sensor.GetDistance();
+
+        const Vec3 rayCenter = origin + direction * (rayLength * 0.5f);
+
+        Mat4 sensorMarkerModel = Mat4::Translation(origin.x, origin.y, origin.z) *
+                                 Mat4::Scale(0.15f, 0.15f, 0.15f);
+
+        m_shader.setMat4("model", sensorMarkerModel);
+        m_shader.setVec3("color", Vec3(1.0f, 1.0f, 0.0f));
+        m_sphere.draw();
+
+        Mat4 rayModel = Mat4::Translation(rayCenter.x, rayCenter.y, rayCenter.z) *
+                        Mat4::RotationY(m_robot.getRotation() + sensorAngles[i]) *
+                        Mat4::Scale(0.035f, 0.035f, rayLength * 0.5f);
+
+        m_shader.setMat4("model", rayModel);
+
+        if (sensor.HasHit()) {
+            m_shader.setVec3("color", Vec3(1.0f, 0.0f, 0.0f));
+        } else {
+            m_shader.setVec3("color", Vec3(0.0f, 1.0f, 0.0f));
+        }
+
+        m_cube.draw();
+    }
+
     m_window.SwapBuffers();
 }
 

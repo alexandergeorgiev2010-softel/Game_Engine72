@@ -1,4 +1,5 @@
 #include "Engine/World/Robot.h"
+
 #include <cmath>
 #include <algorithm>
 
@@ -9,47 +10,12 @@ namespace Engine {
         const float c = std::cos(angle);
         const float s = std::sin(angle);
 
-        return Vec3(
-            offset.x * c + offset.z * s,
-            offset.y,
-            -offset.x * s + offset.z * c
-        );
+        return Vec3(offset.x * c + offset.z * s, offset.y, -offset.x * s + offset.z * c);
     }
 
-    static float getCollisionScore(const AABB& bounds, const World& world)
-    {
-        float score = 0.0f;
-
-        for (const Obstacle& obstacle : world.getObstacles())
-        {
-            if (!bounds.intersects(obstacle.bounds))
-            {
-                continue;
-            }
-
-            const float overlapX =
-                std::min(bounds.maximum.x, obstacle.bounds.maximum.x) -
-                std::max(bounds.minimum.x, obstacle.bounds.minimum.x);
-
-            const float overlapZ =
-                std::min(bounds.maximum.z, obstacle.bounds.maximum.z) -
-                std::max(bounds.minimum.z, obstacle.bounds.minimum.z);
-
-            score += overlapX * overlapZ;
-        }
-
-        return score;
-    }
-
-    Robot::Robot(
-        const Mesh& cube,
-        const Mesh& sphere,
-        Shader& shader,
-        const Vec3& position
-    )
+    Robot::Robot(const Mesh& cube, const Mesh& sphere, Shader& shader, const Vec3& position)
         : m_rigidBody(position, Vec3(0, 0, 0), 1.0f, true),
           m_shader(shader),
-          m_raySensor(20.0f),
           m_torso(cube, shader),
           m_head(cube, shader),
           m_leftEye(sphere, shader),
@@ -71,35 +37,39 @@ namespace Engine {
     void Robot::update(float deltaTime, PhysicsWorld& physicsWorld, const World& world)
     {
         const Vec3 position = m_rigidBody.get_m_position();
+        const float groundHeight = world.GetTerrainHeight(position.x, position.z);
 
-        const float groundHeight = world.GetTerrainHeight(
-            position.x,
-            position.z
-        );
-
-        physicsWorld.update(deltaTime, m_rigidBody,groundHeight);
+        physicsWorld.update(deltaTime, m_rigidBody, groundHeight);
 
         updatePartTransforms();
-
-        const Vec3 updatedPosition = m_rigidBody.get_m_position();
-
-        const Vec3 sensorOrigin =
-            updatedPosition + rotateOffset(
-                Vec3(0.0f, 4.0f, 1.7f),
-                m_rotation
-            );
-
-        const Vec3 sensorDirection(
-            std::sin(m_rotation),
-            0.0f,
-            std::cos(m_rotation)
-        );
-
-        m_raySensor.UpdateRay(sensorOrigin, sensorDirection);
-        m_raySensor.Update(world);
+        updateSensors(world);
     }
 
-   
+    void Robot::updateSensors(const World& world)
+    {
+        constexpr float sensorAngles[5] = {
+            -1.04719755f,
+            -0.52359878f,
+             0.0f,
+             0.52359878f,
+             1.04719755f
+        };
+
+        const Vec3 position = m_rigidBody.get_m_position();
+
+        for (unsigned int i = 0; i < m_raySensors.size(); i++) {
+            const float sensorAngle = m_rotation + sensorAngles[i];
+
+            const Vec3 localOrigin(std::sin(sensorAngles[i]) * 1.5f, 4.0f, 1.7f);
+            const Vec3 sensorOrigin = position + rotateOffset(localOrigin, m_rotation);
+
+            const Vec3 sensorDirection(std::sin(sensorAngle), 0.0f, std::cos(sensorAngle));
+
+            m_raySensors[i].UpdateRay(sensorOrigin, sensorDirection);
+            m_raySensors[i].Update(world);
+        }
+    }
+
     void Robot::moveForward(float amount, const World& world)
     {
         Vec3& position = m_rigidBody.get_m_position();
@@ -107,32 +77,37 @@ namespace Engine {
         const float movementX = std::sin(m_rotation) * amount;
         const float movementZ = std::cos(m_rotation) * amount;
 
-        Vec3 newPosition = position;
+        constexpr float maxStepDistance = 0.5f;
 
-        newPosition.x += movementX;
+        const unsigned int steps = std::max(1u, static_cast<unsigned int>(std::ceil(std::abs(amount) / maxStepDistance)));
 
-        if (canOccupy(newPosition, world))
-        {
-            position.x = newPosition.x;
-        }
+        const float stepX = movementX / steps;
+        const float stepZ = movementZ / steps;
 
-        newPosition = position;
+        for (unsigned int i = 0; i < steps; i++) {
+            Vec3 newPosition = position;
+            newPosition.x += stepX;
 
-        newPosition.z += movementZ;
+            if (canOccupy(newPosition, world)) {
+                position.x = newPosition.x;
+            }
 
-        if (canOccupy(newPosition, world))
-        {
-            position.z = newPosition.z;
+            newPosition = position;
+            newPosition.z += stepZ;
+
+            if (canOccupy(newPosition, world)) {
+                position.z = newPosition.z;
+            }
         }
 
         updatePartTransforms();
+        updateSensors(world);
     }
 
     void Robot::moveBackward(float amount, const World& world)
     {
         moveForward(-amount, world);
     }
-
 
     void Robot::rotate(float amount)
     {
@@ -150,6 +125,52 @@ namespace Engine {
         return m_rotation;
     }
 
+
+    std::array<float, 9> Robot::getObservations(const World& world) const
+    {
+        std::array<float, 9> observations{};
+
+        // 1. Ray sensor readings (0-4)
+        constexpr float maxSensorDistance = 20.0f;
+
+        for (unsigned int i = 0; i < m_raySensors.size(); i++) {
+            observations[i] = std::clamp(m_raySensors[i].GetDistance() / maxSensorDistance, 0.0f, 1.0f);
+        }
+
+        // 2. Direction towards the goal (5-6)
+        const Vec3 position = getPosition();
+        const Vec3& goal = world.GetGoalPosition();
+
+        const float dx = goal.x - position.x;
+        const float dz = goal.z - position.z;
+
+        const float distance = std::sqrt(dx * dx + dz * dz);
+
+        if (distance > 0.001f) {
+            const float normalizedX = dx / distance;
+            const float normalizedZ = dz / distance;
+
+            const float c = std::cos(m_rotation);
+            const float s = std::sin(m_rotation);
+
+            // Relative direction in the robot's coordinate system
+            observations[5] = normalizedX * c - normalizedZ * s;
+            observations[6] = normalizedX * s + normalizedZ * c;
+        }
+
+        // 3. Distance to the goal (7)
+        observations[7] = std::clamp(distance / 250.0f, 0.0f, 1.0f);
+
+        // 4. Terrain height difference (8)
+        const float currentGroundHeight = world.GetTerrainHeight(position.x, position.z);
+        const float heightDifference = goal.y - currentGroundHeight;
+
+        observations[8] = std::tanh(heightDifference);
+
+        return observations;
+    }
+
+
     AABB Robot::getAABBAt(const Vec3& position) const
     {
         const float c = std::abs(std::cos(m_rotation));
@@ -158,98 +179,47 @@ namespace Engine {
         const float halfWidth = c * 3.1f + s * 1.7f;
         const float halfDepth = s * 3.1f + c * 1.7f;
 
-        return AABB(
-            position + Vec3(-halfWidth, 0.0f, -halfDepth),
-            position + Vec3(halfWidth, 9.0f, halfDepth)
-        );
+        return AABB(position + Vec3(-halfWidth, 0.0f, -halfDepth), position + Vec3(halfWidth, 9.0f, halfDepth));
     }
 
     bool Robot::canOccupy(const Vec3& position, const World& world) const
     {
-        const AABB currentBounds =
-            getAABBAt(m_rigidBody.get_m_position());
+        const AABB bounds = getAABBAt(position);
 
-        const AABB newBounds = getAABBAt(position);
-
-        const float currentScore =
-            getCollisionScore(currentBounds, world);
-
-        const float newScore =
-            getCollisionScore(newBounds, world);
-
-        return newScore <= currentScore + 0.0001f;
+        return !world.hasCollision(bounds);
     }
 
     void Robot::updatePartTransforms()
     {
         const Vec3 position = m_rigidBody.get_m_position();
 
-        auto setPart = [&](WorldObject& part,
-                           const Vec3& offset,
-                           const Vec3& scale)
+        auto setPart = [&](WorldObject& part, const Vec3& offset, const Vec3& scale)
         {
-            part.getTransform().position =
-                position + rotateOffset(offset, m_rotation);
-
+            part.getTransform().position = position + rotateOffset(offset, m_rotation);
             part.getTransform().rotation = Vec3(0.0f, m_rotation, 0.0f);
             part.getTransform().scale = scale;
         };
 
-        setPart(m_torso,
-            Vec3(0.0f, 4.2f, 0.0f),
-            Vec3(2.1f, 2.7f, 1.2f));
+        setPart(m_torso, Vec3(0.0f, 4.2f, 0.0f), Vec3(2.1f, 2.7f, 1.2f));
+        setPart(m_head, Vec3(0.0f, 7.5f, 0.0f), Vec3(1.35f, 1.35f, 1.35f));
 
-        setPart(m_head,
-            Vec3(0.0f, 7.5f, 0.0f),
-            Vec3(1.35f, 1.35f, 1.35f));
+        setPart(m_leftEye, Vec3(-0.4f, 7.7f, 1.4f), Vec3(0.25f, 0.25f, 0.25f));
+        setPart(m_rightEye, Vec3(0.4f, 7.7f, 1.4f), Vec3(0.25f, 0.25f, 0.25f));
 
-        setPart(m_leftEye,
-            Vec3(-0.4f, 7.7f, 1.4f),
-            Vec3(0.25f, 0.25f, 0.25f));
+        setPart(m_leftPupil, Vec3(-0.4f, 7.7f, 1.61f), Vec3(0.15f, 0.15f, 0.09f));
+        setPart(m_rightPupil, Vec3(0.4f, 7.7f, 1.61f), Vec3(0.15f, 0.15f, 0.09f));
 
-        setPart(m_rightEye,
-            Vec3(0.4f, 7.7f, 1.4f),
-            Vec3(0.25f, 0.25f, 0.25f));
+        setPart(m_leftShoulder, Vec3(-2.15f, 5.65f, 0.0f), Vec3(0.65f, 0.65f, 0.65f));
+        setPart(m_rightShoulder, Vec3(2.15f, 5.65f, 0.0f), Vec3(0.65f, 0.65f, 0.65f));
 
-        setPart(m_leftPupil,
-            Vec3(-0.4f, 7.7f, 1.61f),
-            Vec3(0.15f, 0.15f, 0.09f));
+        setPart(m_leftArm, Vec3(-2.55f, 4.25f, 0.0f), Vec3(0.55f, 1.15f, 0.55f));
+        setPart(m_rightArm, Vec3(2.55f, 4.25f, 0.0f), Vec3(0.55f, 1.15f, 0.55f));
 
-        setPart(m_rightPupil,
-            Vec3(0.4f, 7.7f, 1.61f),
-            Vec3(0.15f, 0.15f, 0.09f));
+        setPart(m_leftElbow, Vec3(-2.55f, 3.65f, 0.25f), Vec3(0.43f, 0.43f, 0.43f));
+        setPart(m_rightElbow, Vec3(2.55f, 3.65f, 0.25f), Vec3(0.43f, 0.43f, 0.43f));
 
-        setPart(m_leftShoulder,
-            Vec3(-2.15f, 5.65f, 0.0f),
-            Vec3(0.65f, 0.65f, 0.65f));
-
-        setPart(m_rightShoulder,
-            Vec3(2.15f, 5.65f, 0.0f),
-            Vec3(0.65f, 0.65f, 0.65f));
-
-        setPart(m_leftArm,
-            Vec3(-2.55f, 4.25f, 0.0f),
-            Vec3(0.55f, 1.15f, 0.55f));
-
-        setPart(m_rightArm,
-            Vec3(2.55f, 4.25f, 0.0f),
-            Vec3(0.55f, 1.15f, 0.55f));
-
-        setPart(m_leftElbow,
-            Vec3(-2.55f, 3.65f, 0.25f),
-            Vec3(0.43f, 0.43f, 0.43f));
-
-        setPart(m_rightElbow,
-            Vec3(2.55f, 3.65f, 0.25f),
-            Vec3(0.43f, 0.43f, 0.43f));
-
-        setPart(m_leftLeg,
-            Vec3(-0.9f, 1.5f, 0.0f),
-            Vec3(0.75f, 1.5f, 0.9f));
-
-        setPart(m_rightLeg,
-            Vec3(0.9f, 1.5f, 0.0f),
-            Vec3(0.75f, 1.5f, 0.9f));
+        setPart(m_leftLeg, Vec3(-0.9f, 1.5f, 0.0f), Vec3(0.75f, 1.5f, 0.9f));
+        setPart(m_rightLeg, Vec3(0.9f, 1.5f, 0.0f), Vec3(0.75f, 1.5f, 0.9f));
     }
 
     void Robot::draw() const

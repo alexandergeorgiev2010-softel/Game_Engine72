@@ -105,6 +105,9 @@ namespace Engine {
         // Exit
         addWallX(-37, 190, 13, 5, 1);
         addWallX(37, 190, 13, 5, 1);
+
+        // Goal position
+        m_goalPosition = Vec3(0.0f, GetTerrainHeight(0.0f, 210.0f), 210.0f);
     }
 
     void World::draw() const
@@ -131,6 +134,11 @@ namespace Engine {
     float World::GetTerrainHeight(float x, float z) const
     {
         return m_terrain.GetHeight(x, z);
+    }
+
+    const Vec3& World::GetGoalPosition() const
+    {
+        return m_goalPosition;
     }
 
 }

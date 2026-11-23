@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Engine/Math/Vec3.h"
 #include "Engine/Physics/Rigidbody.h"
+#include "Engine/Math/Vec3.h"
 
 namespace Engine {
 
@@ -16,7 +16,7 @@ namespace Engine {
         }
 
     private:
-        Vec3 m_gravity = {0.0f, -9.81f, 0.0f};
+        Vec3 m_gravity = Vec3(0.0f, -9.81f, 0.0f);
     };
 
 }

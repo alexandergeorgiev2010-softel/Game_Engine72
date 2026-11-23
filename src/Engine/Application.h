@@ -13,6 +13,8 @@
 #include "Engine/World/Robot.h"
 #include "Engine/Debug/Profiler.h"
 #include "Engine/Sensors/RaySensor.h"
+#include "Engine/Controllers/RobotController.h"
+#include <memory>
 #include <glad/gl.h>
 
 
@@ -40,6 +42,8 @@ private:
     Shader m_shader;
 
     Robot m_robot;
+
+    std::unique_ptr<RobotController> m_controller;
 
     Camera m_camera;
     World m_world;

@@ -10,16 +10,13 @@
 #include "Engine/World/World.h"
 #include "Engine/Sensors/RaySensor.h"
 
+#include <array>
+
 namespace Engine {
 
 class Robot {
 public:
-    Robot(
-        const Mesh& cube,
-        const Mesh& sphere,
-        Shader& shader,
-        const Vec3& position
-    );
+    Robot(const Mesh& cube, const Mesh& sphere, Shader& shader, const Vec3& position);
 
     void update(float deltaTime, PhysicsWorld& physicsWorld, const World& world);
     void draw() const;
@@ -30,9 +27,14 @@ public:
 
     Vec3 getPosition() const;
     float getRotation() const;
+    std::array<float, 9> getObservations(const World& world) const;
 
     const RaySensor& getRaySensor() const {
-        return m_raySensor;
+        return m_raySensors[2];
+    }
+
+    const std::array<RaySensor, 5>& getRaySensors() const {
+        return m_raySensors;
     }
 
 private:
@@ -40,7 +42,13 @@ private:
     float m_rotation = 0.0f;
     Shader& m_shader;
 
-    RaySensor m_raySensor;
+    std::array<RaySensor, 5> m_raySensors{
+        RaySensor(20.0f),
+        RaySensor(20.0f),
+        RaySensor(20.0f),
+        RaySensor(20.0f),
+        RaySensor(20.0f)
+    };
 
     WorldObject m_torso;
     WorldObject m_head;
@@ -67,6 +75,7 @@ private:
     bool canOccupy(const Vec3& position, const World& world) const;
 
     void updatePartTransforms();
+    void updateSensors(const World& world);
 };
 
 }

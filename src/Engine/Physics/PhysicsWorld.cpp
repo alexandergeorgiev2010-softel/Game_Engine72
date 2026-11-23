@@ -1,30 +1,45 @@
 #include "Engine/Physics/PhysicsWorld.h"
+
 #include <cmath>
 
 namespace Engine {
 
-    void PhysicsWorld::update(float deltaTime, RigidBody& rigidBody, float groundHeight) 
-    {
-        if (!rigidBody.get_m_isResting()) {
-            rigidBody.get_m_velocity() += m_gravity * deltaTime;
-            rigidBody.get_m_position() += rigidBody.get_m_velocity() * deltaTime;
+    void PhysicsWorld::update(
+        float deltaTime,
+        RigidBody& rigidBody,
+        float groundHeight
+    ) {
+        if (deltaTime <= 0.0f) {
+            return;
         }
 
-        if (rigidBody.get_m_position().y < groundHeight) {
-            rigidBody.get_m_position().y = groundHeight;
+        Vec3& position = rigidBody.get_m_position();
+        Vec3& velocity = rigidBody.get_m_velocity();
+        bool& isResting = rigidBody.get_m_isResting();
 
-            if (std::abs(rigidBody.get_m_velocity().y) <
-                rigidBody.get_m_bouncing_threshold()) {
+        
+        if (isResting) {
+            position.y = groundHeight;
+            velocity.y = 0.0f;
+            return;
+        }
 
-                rigidBody.get_m_velocity().y = 0.0f;
-                rigidBody.get_m_isResting() = true;
+        
+        velocity += m_gravity * deltaTime;
+        position += velocity * deltaTime;
 
-            } else {
-                rigidBody.get_m_velocity().y =
-                    -rigidBody.get_m_velocity().y *
-                    rigidBody.get_m_restitution();
+        if (position.y <= groundHeight) {
+            position.y = groundHeight;
+
+            if (std::abs(velocity.y) < rigidBody.get_m_bouncing_threshold()) {
+                velocity.y = 0.0f;
+                isResting = true;
+            }
+            else {
+                velocity.y = -velocity.y * rigidBody.get_m_restitution();
             }
         }
     }
 
 }
+
