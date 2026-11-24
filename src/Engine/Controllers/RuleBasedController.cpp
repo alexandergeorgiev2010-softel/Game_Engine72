@@ -36,12 +36,7 @@ namespace Engine {
             const float rightClearance =
                 (observations[3] + observations[4]) * 0.5f;
 
-            if (leftClearance > rightClearance) {
-                robot.rotate(-turnSpeed * deltaTime);
-            } else {
-                robot.rotate(turnSpeed * deltaTime);
-            }
-
+            robot.rotate((leftClearance > rightClearance ? -1.0f : 1.0f) * turnSpeed * deltaTime);
             robot.moveForward(8.0f * deltaTime, world);
             return;
         }

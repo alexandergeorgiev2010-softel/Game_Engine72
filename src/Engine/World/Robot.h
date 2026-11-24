@@ -19,6 +19,7 @@ public:
     Robot(const Mesh& cube, const Mesh& sphere, Shader& shader, const Vec3& position);
 
     void update(float deltaTime, PhysicsWorld& physicsWorld, const World& world);
+    void reset(const Vec3& position, float rotation, const World& world);
     void draw() const;
 
     void moveForward(float amount, const World& world);

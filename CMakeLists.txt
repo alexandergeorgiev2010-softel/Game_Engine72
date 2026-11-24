@@ -36,6 +36,10 @@ add_executable(Game_Engine72
     src/Engine/Procedural/PerlinNoise.cpp
     src/Engine/Controllers/HumanController.cpp
     src/Engine/Controllers/RuleBasedController.cpp
+    src/Engine/Controllers/NeuralNetworkController.cpp
+    src/Engine/Controllers/GeneticAlgorithm.cpp
+    src/Engine/Controllers/QLearningController.cpp
+    src/Engine/Controllers/QLearningTrainer.cpp
     third_party/glad/src/gl.c
 )
 

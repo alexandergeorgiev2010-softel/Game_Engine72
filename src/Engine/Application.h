@@ -23,6 +23,7 @@ namespace Engine {
 struct ApplicationConfig {
     std::string name = "Game Engine 72";
     int maxFrames = 600;
+    bool trainQLearning = true;
 };
 
 class Application {

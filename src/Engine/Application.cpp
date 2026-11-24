@@ -1,6 +1,7 @@
 #include "Engine/Application.h"
 #include "Engine/Controllers/HumanController.h"
-#include "Engine/Controllers/RuleBasedController.h"
+#include "Engine/Controllers/QLearningController.h"
+#include "Engine/Controllers/QLearningTrainer.h"
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
@@ -17,8 +18,8 @@ Application::Application(ApplicationConfig config)
       m_sphere(Primitives::createSphere()),
       m_shader("src/Engine/Renderer/shaders/cube.vert", "src/Engine/Renderer/shaders/cube.frag"),
       m_robot(m_cube, m_sphere, m_shader, Vec3(0, 0, 0)),
-      m_controller(std::make_unique<RuleBasedController>()),
-      m_camera({0.0f, 5.0f, 10.0f}),
+      m_controller(std::make_unique<HumanController>()),
+      m_camera({0.0f, 50.0f, 10.0f}),
       m_world(),
       m_config(std::move(config)),
       m_PhysicsWorld()
@@ -29,9 +30,20 @@ void Application::run()
 {
     glEnable(GL_DEPTH_TEST);
 
-    m_window.CaptureMouse();
-
     std::cout << "Starting " << m_config.name << '\n';
+
+    if (m_config.trainQLearning) {
+        QLearningTrainer trainer;
+        const auto qTable = trainer.train(m_robot, m_PhysicsWorld, m_world);
+        m_controller = std::make_unique<QLearningController>(qTable);
+        std::cout << "Training complete. Active controller: Q-learning.\n";
+    } else {
+        m_controller = std::make_unique<HumanController>();
+        std::cout << "Active controller: Human.\n";
+    }
+
+    m_robot.reset(Vec3(0.0f, 0.0f, 0.0f), 0.0f, m_world);
+    m_window.CaptureMouse();
 
     auto lastFrameTime = std::chrono::steady_clock::now();
 

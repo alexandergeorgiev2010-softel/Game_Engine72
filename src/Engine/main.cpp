@@ -2,6 +2,7 @@
 
 int main() {
     Engine::ApplicationConfig config;
+    config.trainQLearning = false;
     Engine::Application app(config);
     app.run();
 

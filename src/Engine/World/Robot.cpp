@@ -45,6 +45,20 @@ namespace Engine {
         updateSensors(world);
     }
 
+    void Robot::reset(const Vec3& position, float rotation, const World& world)
+    {
+        Vec3 resetPosition = position;
+        resetPosition.y = world.GetTerrainHeight(resetPosition.x, resetPosition.z);
+
+        m_rigidBody.get_m_position() = resetPosition;
+        m_rigidBody.get_m_velocity() = Vec3();
+        m_rigidBody.get_m_isResting() = true;
+        m_rotation = rotation;
+
+        updatePartTransforms();
+        updateSensors(world);
+    }
+
     void Robot::updateSensors(const World& world)
     {
         constexpr float sensorAngles[5] = {
