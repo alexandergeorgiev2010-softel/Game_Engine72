@@ -2,11 +2,14 @@
 #include "Engine/Controllers/HumanController.h"
 #include "Engine/Controllers/QLearningController.h"
 #include "Engine/Controllers/QLearningTrainer.h"
+#include "Engine/Controllers/RuleBasedController.h"
 #include <glad/gl.h>
 #include <GLFW/glfw3.h>
 
 #include <chrono>
+#include <cstdint>
 #include <iostream>
+#include <random>
 #include <thread>
 #include <utility>
 
@@ -32,7 +35,29 @@ void Application::run()
 
     std::cout << "Starting " << m_config.name << '\n';
 
-    if (m_config.trainQLearning) {
+    if (m_config.battleArenaMode) {
+        m_world.setupHabitat();
+        m_battleArena.start(m_cube, m_sphere, m_shader, m_world);
+    } else if (m_config.habitatMode) {
+        m_world.setupHabitat();
+        m_habitat.reset(m_robot, m_world);
+        m_controller = std::make_unique<HumanController>();
+        std::cout << "Habitat controls: H toggles AI/manual, arrows assist, B spawns a cell, T spawns a hazard, R resets.\n";
+    } else if (m_config.miniGameMode) {
+        m_controller = std::make_unique<HumanController>();
+        m_miniGame.reset(m_robot, m_world);
+        std::cout << "Mini-game controls: arrows move, R resets the course.\n";
+    } else if (m_config.ruleBasedMode) {
+        std::random_device device;
+        const std::uint32_t seed = device();
+        m_controller = std::make_unique<RuleBasedController>(
+            m_config.ruleBasedTurnNoiseRadians,
+            seed
+        );
+        std::cout << "Fixed course, random turn noise: +/- "
+                  << m_config.ruleBasedTurnNoiseRadians
+                  << " rad | seed: " << seed << '\n';
+    } else if (m_config.trainQLearning) {
         QLearningTrainer trainer;
         const auto qTable = trainer.train(m_robot, m_PhysicsWorld, m_world);
         m_controller = std::make_unique<QLearningController>(qTable);
@@ -42,7 +67,9 @@ void Application::run()
         std::cout << "Active controller: Human.\n";
     }
 
-    m_robot.reset(Vec3(0.0f, 0.0f, 0.0f), 0.0f, m_world);
+    if (!m_config.miniGameMode && !m_config.habitatMode && !m_config.battleArenaMode) {
+        m_robot.reset(Vec3(0.0f, 0.0f, 0.0f), 0.0f, m_world);
+    }
     m_window.CaptureMouse();
 
     auto lastFrameTime = std::chrono::steady_clock::now();
@@ -129,9 +156,25 @@ void Application::update(float deltaTime)
         m_window.ToggleMouseCapture();
     }
 
-    m_controller->update(deltaTime, m_window, m_robot, m_world);
+    if (m_config.battleArenaMode) {
+        m_battleArena.step(deltaTime, m_window, m_PhysicsWorld, m_world);
+    } else if (m_config.habitatMode) {
+        m_habitat.step(deltaTime, m_window, m_robot, m_PhysicsWorld, m_world);
+    } else {
+        if (m_config.miniGameMode && m_window.WasKeyPressed(GLFW_KEY_R)) {
+            m_miniGame.reset(m_robot, m_world);
+        }
 
-    m_robot.update(deltaTime, m_PhysicsWorld, m_world);
+        if (!m_config.miniGameMode || !m_miniGame.isFinished()) {
+            m_controller->update(deltaTime, m_window, m_robot, m_world);
+        }
+
+        m_robot.update(deltaTime, m_PhysicsWorld, m_world);
+
+        if (m_config.miniGameMode) {
+            m_miniGame.update(m_robot, m_world);
+        }
+    }
 
     if (m_window.IsMouseCaptured()) {
         Vec3 MouseDelta = m_window.GetMouseDelta();
@@ -175,13 +218,23 @@ void Application::render()
                              Mat4::Scale(obstacle.scale.x, obstacle.scale.y, obstacle.scale.z);
 
         m_shader.setMat4("model", obstacleModel);
-        m_shader.setVec3("color", Vec3(0.9f, 0.2f, 0.1f));
+        m_shader.setVec3(
+            "color",
+            (m_config.habitatMode || m_config.battleArenaMode)
+                ? Vec3(0.35f, 0.4f, 0.45f)
+                : Vec3(0.9f, 0.2f, 0.1f)
+        );
 
         m_cube.draw();
     }
 
-    // Goal marker - base
-    const Vec3& goal = m_world.GetGoalPosition();
+    if (m_config.miniGameMode && !m_config.habitatMode && !m_config.battleArenaMode) {
+        m_miniGame.draw(m_cube, m_sphere, m_shader);
+    }
+
+    if (!m_config.habitatMode && !m_config.battleArenaMode) {
+        // Goal marker - base
+        const Vec3& goal = m_world.GetGoalPosition();
 
     Mat4 goalBaseModel = Mat4::Translation(goal.x, goal.y + 0.3f, goal.z) *
                          Mat4::Scale(3.0f, 0.3f, 3.0f);
@@ -209,7 +262,16 @@ void Application::render()
 
     m_sphere.draw();
 
-    m_robot.draw();
+    }
+
+    if (m_config.battleArenaMode) {
+        m_battleArena.draw();
+    } else if (m_config.habitatMode) {
+        m_habitat.draw(m_cube, m_sphere, m_shader);
+    }
+
+    if (!m_config.battleArenaMode) {
+        m_robot.draw();
 
     constexpr float sensorAngles[5] = {
         -1.04719755f,
@@ -250,6 +312,7 @@ void Application::render()
         }
 
         m_cube.draw();
+    }
     }
 
     m_window.SwapBuffers();

@@ -12,6 +12,8 @@ namespace Engine {
     public:
         World();
 
+        void setupHabitat();
+
         void draw() const;
 
         bool hasCollision(const AABB& bounds) const;

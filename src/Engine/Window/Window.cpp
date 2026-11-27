@@ -149,6 +149,12 @@ namespace Engine {
         );
     }
 
+    void Window::SetTitle(const std::string& title) {
+        if (m_window != nullptr) {
+            glfwSetWindowTitle(static_cast<GLFWwindow*>(m_window), title.c_str());
+        }
+    }
+
     bool Window::IsMouseCaptured() {
         return m_MouseCaptured;
     }

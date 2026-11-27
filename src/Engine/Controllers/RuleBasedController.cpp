@@ -3,8 +3,15 @@
 
 #include <array>
 #include <cmath>
+#include <algorithm>
 
 namespace Engine {
+
+    RuleBasedController::RuleBasedController(float turnNoiseRadians, std::uint32_t seed)
+        : m_turnNoiseRadians(std::max(0.0f, turnNoiseRadians)),
+          m_random(seed)
+    {
+    }
 
     void RuleBasedController::update(
         float deltaTime,
@@ -17,6 +24,16 @@ namespace Engine {
         if (deltaTime <= 0.0f) {
             return;
         }
+
+        if (m_noiseTimer <= 0.0f) {
+            std::uniform_real_distribution<float> angleNoise(
+                -m_turnNoiseRadians,
+                m_turnNoiseRadians
+            );
+            m_currentAngleNoise = angleNoise(m_random);
+            m_noiseTimer = 0.25f;
+        }
+        m_noiseTimer -= deltaTime;
 
         const std::array<float, 9> observations =
             robot.getObservations(world);
@@ -36,13 +53,15 @@ namespace Engine {
             const float rightClearance =
                 (observations[3] + observations[4]) * 0.5f;
 
-            robot.rotate((leftClearance > rightClearance ? -1.0f : 1.0f) * turnSpeed * deltaTime);
+            const float direction = leftClearance > rightClearance ? -1.0f : 1.0f;
+            const float noiseTurnRate = m_currentAngleNoise / 0.25f;
+            robot.rotate((direction * turnSpeed + noiseTurnRate) * deltaTime);
             robot.moveForward(8.0f * deltaTime, world);
             return;
         }
 
         const float goalBearing =
-            std::atan2(observations[5], observations[6]);
+            std::atan2(observations[5], observations[6]) + m_currentAngleNoise;
 
         constexpr float headingDeadZone = 0.15f;
 

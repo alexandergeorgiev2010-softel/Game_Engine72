@@ -20,11 +20,13 @@ public:
 
     void update(float deltaTime, PhysicsWorld& physicsWorld, const World& world);
     void reset(const Vec3& position, float rotation, const World& world);
-    void draw() const;
+    void draw(const Vec3& bodyColor = Vec3(0.2f, 0.4f, 0.9f)) const;
 
     void moveForward(float amount, const World& world);
     void moveBackward(float amount, const World& world);
     void rotate(float amount);
+    void setSize(float size);
+    float getSize() const;
 
     Vec3 getPosition() const;
     float getRotation() const;
@@ -41,6 +43,7 @@ public:
 private:
     RigidBody m_rigidBody;
     float m_rotation = 0.0f;
+    float m_size = 1.0f;
     Shader& m_shader;
 
     std::array<RaySensor, 5> m_raySensors{

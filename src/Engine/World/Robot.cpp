@@ -54,6 +54,7 @@ namespace Engine {
         m_rigidBody.get_m_velocity() = Vec3();
         m_rigidBody.get_m_isResting() = true;
         m_rotation = rotation;
+        m_size = 1.0f;
 
         updatePartTransforms();
         updateSensors(world);
@@ -74,7 +75,11 @@ namespace Engine {
         for (unsigned int i = 0; i < m_raySensors.size(); i++) {
             const float sensorAngle = m_rotation + sensorAngles[i];
 
-            const Vec3 localOrigin(std::sin(sensorAngles[i]) * 1.5f, 4.0f, 1.7f);
+            const Vec3 localOrigin(
+                std::sin(sensorAngles[i]) * 1.5f * m_size,
+                4.0f * m_size,
+                1.7f * m_size
+            );
             const Vec3 sensorOrigin = position + rotateOffset(localOrigin, m_rotation);
 
             const Vec3 sensorDirection(std::sin(sensorAngle), 0.0f, std::cos(sensorAngle));
@@ -139,6 +144,17 @@ namespace Engine {
         return m_rotation;
     }
 
+    void Robot::setSize(float size)
+    {
+        m_size = std::clamp(size, 0.55f, 1.8f);
+        updatePartTransforms();
+    }
+
+    float Robot::getSize() const
+    {
+        return m_size;
+    }
+
 
     std::array<float, 9> Robot::getObservations(const World& world) const
     {
@@ -190,10 +206,13 @@ namespace Engine {
         const float c = std::abs(std::cos(m_rotation));
         const float s = std::abs(std::sin(m_rotation));
 
-        const float halfWidth = c * 3.1f + s * 1.7f;
-        const float halfDepth = s * 3.1f + c * 1.7f;
+        const float halfWidth = (c * 3.1f + s * 1.7f) * m_size;
+        const float halfDepth = (s * 3.1f + c * 1.7f) * m_size;
 
-        return AABB(position + Vec3(-halfWidth, 0.0f, -halfDepth), position + Vec3(halfWidth, 9.0f, halfDepth));
+        return AABB(
+            position + Vec3(-halfWidth, 0.0f, -halfDepth),
+            position + Vec3(halfWidth, 9.0f * m_size, halfDepth)
+        );
     }
 
     bool Robot::canOccupy(const Vec3& position, const World& world) const
@@ -209,9 +228,9 @@ namespace Engine {
 
         auto setPart = [&](WorldObject& part, const Vec3& offset, const Vec3& scale)
         {
-            part.getTransform().position = position + rotateOffset(offset, m_rotation);
+            part.getTransform().position = position + rotateOffset(offset * m_size, m_rotation);
             part.getTransform().rotation = Vec3(0.0f, m_rotation, 0.0f);
-            part.getTransform().scale = scale;
+            part.getTransform().scale = scale * m_size;
         };
 
         setPart(m_torso, Vec3(0.0f, 4.2f, 0.0f), Vec3(2.1f, 2.7f, 1.2f));
@@ -236,9 +255,9 @@ namespace Engine {
         setPart(m_rightLeg, Vec3(0.9f, 1.5f, 0.0f), Vec3(0.75f, 1.5f, 0.9f));
     }
 
-    void Robot::draw() const
+    void Robot::draw(const Vec3& bodyColor) const
     {
-        m_shader.setVec3("color", Vec3(0.2f, 0.4f, 0.9f));
+        m_shader.setVec3("color", bodyColor);
         m_torso.draw();
 
         m_shader.setVec3("color", Vec3(0.8f, 0.8f, 0.8f));

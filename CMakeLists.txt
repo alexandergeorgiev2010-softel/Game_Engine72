@@ -30,6 +30,9 @@ add_executable(Game_Engine72
     src/Engine/World/World.cpp
     src/Engine/World/WorldObject.cpp
     src/Engine/World/Robot.cpp
+    src/Engine/World/MiniGameMode.cpp
+    src/Engine/World/HabitatMode.cpp
+    src/Engine/World/BattleArenaMode.cpp
     src/Engine/Sensors/Ray.cpp
     src/Engine/Sensors/RaySensor.cpp
     src/Engine/Debug/Profiler.cpp

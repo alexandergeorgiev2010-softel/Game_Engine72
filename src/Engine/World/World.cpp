@@ -110,6 +110,44 @@ namespace Engine {
         m_goalPosition = Vec3(0.0f, GetTerrainHeight(0.0f, 210.0f), 210.0f);
     }
 
+    void World::setupHabitat()
+    {
+        m_obstacles.clear();
+
+        constexpr float halfSize = 80.0f;
+        constexpr float segmentLength = 8.0f;
+
+        for (float x = -halfSize; x < halfSize; x += segmentLength) {
+            const float centerX = x + segmentLength * 0.5f;
+            const float southY = GetTerrainHeight(centerX, -halfSize);
+            const float northY = GetTerrainHeight(centerX, halfSize);
+
+            m_obstacles.emplace_back(
+                Vec3(centerX, southY + 4.0f, -halfSize),
+                Vec3(segmentLength * 0.5f, 4.0f, 2.0f)
+            );
+            m_obstacles.emplace_back(
+                Vec3(centerX, northY + 4.0f, halfSize),
+                Vec3(segmentLength * 0.5f, 4.0f, 2.0f)
+            );
+        }
+
+        for (float z = -halfSize; z < halfSize; z += segmentLength) {
+            const float centerZ = z + segmentLength * 0.5f;
+            const float westY = GetTerrainHeight(-halfSize, centerZ);
+            const float eastY = GetTerrainHeight(halfSize, centerZ);
+
+            m_obstacles.emplace_back(
+                Vec3(-halfSize, westY + 4.0f, centerZ),
+                Vec3(2.0f, 4.0f, segmentLength * 0.5f)
+            );
+            m_obstacles.emplace_back(
+                Vec3(halfSize, eastY + 4.0f, centerZ),
+                Vec3(2.0f, 4.0f, segmentLength * 0.5f)
+            );
+        }
+    }
+
     void World::draw() const
     {
         m_terrain.draw();

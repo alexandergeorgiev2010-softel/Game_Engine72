@@ -5,6 +5,7 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <array>
+#include <string>
 
 namespace Engine {
 
@@ -27,6 +28,7 @@ class Window {
         bool IsMouseCaptured();
 
         void GetWindowSize(int& width, int& height) const;
+        void SetTitle(const std::string& title);
 
     private:
         void* m_window = nullptr;

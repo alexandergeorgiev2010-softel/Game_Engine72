@@ -11,6 +11,9 @@
 #include "Engine/Renderer/Camera.h"
 #include "Engine/World/World.h"
 #include "Engine/World/Robot.h"
+#include "Engine/World/MiniGameMode.h"
+#include "Engine/World/HabitatMode.h"
+#include "Engine/World/BattleArenaMode.h"
 #include "Engine/Debug/Profiler.h"
 #include "Engine/Sensors/RaySensor.h"
 #include "Engine/Controllers/RobotController.h"
@@ -24,6 +27,11 @@ struct ApplicationConfig {
     std::string name = "Game Engine 72";
     int maxFrames = 600;
     bool trainQLearning = true;
+    bool miniGameMode = false;
+    bool habitatMode = false;
+    bool battleArenaMode = false;
+    bool ruleBasedMode = false;
+    float ruleBasedTurnNoiseRadians = 0.15f;
 };
 
 class Application {
@@ -43,6 +51,9 @@ private:
     Shader m_shader;
 
     Robot m_robot;
+    MiniGameMode m_miniGame;
+    HabitatMode m_habitat;
+    BattleArenaMode m_battleArena;
 
     std::unique_ptr<RobotController> m_controller;
 
